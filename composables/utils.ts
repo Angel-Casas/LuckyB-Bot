@@ -1,4 +1,3 @@
-import { Buffer } from "buffer";
 import CryptoJS from 'crypto-js';
 import Fingerprint2 from 'fingerprintjs2';
 
