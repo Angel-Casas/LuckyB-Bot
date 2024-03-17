@@ -1,0 +1,26 @@
+{
+  "name": "nuxt-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@types/paho-mqtt": "^1.0.10",
+    "Buffer": "^0.0.0",
+    "crypto-js": "^4.2.0",
+    "fingerprintjs2": "^2.1.4",
+    "nuxt": "^3.10.3",
+    "uuid": "^9.0.1",
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.19.4",
+    "paho-mqtt": "^1.1.0"
+  }
+}

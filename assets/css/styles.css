@@ -1,0 +1,271 @@
+/* Variables */
+:root {
+    --primary: rgb(2, 80, 198);
+    --secondary: rgb(24, 132, 232);
+    --warning: rgb(255, 140, 46);
+    --danger: rgb(254, 82, 82);
+    --info: rgb(24, 132, 232);
+    --white: rgb(255, 255, 255);
+    --yellow: rgb(255, 255, 0);
+    --main-green: rgb(89, 255, 172);
+    --main-gold: rgb(255, 209, 76);
+    --bg-light: var(--white);
+    --bg-dark: var(--primary);
+    --text-light: rgb(0, 0, 0);
+    --text-dark: var(--white);
+    --background: var(--bg-dark);
+    --text: var(--text-dark);
+}
+
+html, body {
+    background: var(--background);
+    color: var(--text);
+    transition: all 200ms ease-in;
+}
+
+h1 {
+    font-size: 36px;
+  }
+h2 {
+    font-size: 24px;
+}
+h3 {
+    font-size: 22px;
+}
+h4 {
+    font-size: 20px;
+}
+
+.title {
+    width: 100%;
+    text-align: center;
+    color: var(--yellow);
+    font-weight: bold;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.primary {
+    color: var(--primary);
+}
+
+.secondary {
+    color: var(--secondary);
+}
+.white {
+    background-color: var(--white);
+}
+
+.formWrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    width: 100%;
+    justify-content: space-around;
+    align-items: self-start;
+}
+
+.form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 1.5rem;
+}
+.form .userInput {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin: 5px;
+    padding: 5px;
+    width: 100%;
+    max-width: 400px;
+}
+.form .userInput label {
+    width: 100%;
+    text-align: left;
+    font-weight: bold;
+}
+.form .userInput input {
+    width: 100%;
+    padding: 3px 10px;
+}
+.form .inputButtons {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    max-width: 400px;
+}
+.form .actionButtons {
+    display: flex;
+    flex-flow: column wrap;
+    width: 100%;
+    max-width: 400px;
+}
+.form .actionButtons button {
+    margin: 5px;
+}
+
+.form .playerButtons {
+    display: flex;
+    flex-flow: row nowrap;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 400px;
+}
+
+.form .playerButtons button {
+    width: 100%;
+    margin: 5px;
+}
+
+input[type="text"] {
+    border: 2px solid var(--white);
+    background-color: rgba(255, 255, 255, 0.8);
+    color: var(--primary);
+    border-radius: 0.25em;
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+select {
+    position: relative;
+    display: grid;
+    grid-template-areas: "select";
+    align-items: center;
+    width: 100%;
+    border: 1px solid var(--white);
+    border-radius: 0.25em;
+    padding: 0.25em 0.5em;
+    margin: 0 0.25em;
+    cursor: pointer;
+    color: var(--background);
+    font-size: 1.8rem;
+    font-weight: bold;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+select,
+.select::after {
+  grid-area: select;
+}
+.select::after {
+  content: "";
+  width: 0.8em;
+  height: 0.5em;
+  background-color: var(--white);
+  clip-path: polygon(100% 0%, 0 0%, 50% 100%);
+  justify-self: end;
+}
+option {
+    background-color: var(--white);
+}
+
+button {
+    border: 1px solid transparent;
+    background-color: var(--yellow);
+    color: var(--background);
+    padding: 20px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 18px;
+    transition: background-color 0.2s ease-in-out;
+}
+button:hover {
+    background-color: var(--background);
+    color: var(--yellow);
+    cursor: pointer;
+    border: 1px solid var(--yellow);
+}
+
+.liveSignal, .offlineSignal, .reconnectingSignal {
+    font-size: 2.5rem;
+    margin-top: 25px;
+}
+.liveSignal::before {
+    display: inline-block;
+    content: "";
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.8rem solid var(--main-green);
+    border-radius: 10px;
+    margin: 0 5px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0% {
+      transform: scale(0.8);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(2);
+      opacity: 0;
+    }
+  }
+  .offlineSignal::before {
+    display: inline-block;
+    content: "";
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.8rem solid var(--danger);
+    border-radius: 10px;
+    margin: 0 5px;
+  }
+  .reconnectingSignal::before {
+    display: inline-block;
+    content: "";
+    width: 1.5rem;
+    height: 1.5rem;
+    border: 0.8rem solid var(--main-gold);
+    border-radius: 10px;
+    margin: 0 5px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  /* STATS */
+
+  .stats {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    max-width: 1000px;
+    padding: 2rem;
+    margin: 0 auto;
+  }
+
+  .stats .subtitle {
+    width: 100%;
+    text-align: center;
+    font-size: 4rem;
+    color: var(--yellow);
+  }
+
+  .stats .itemBox {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 1rem;
+    width: 100%;
+  }
+
+  .stats .itemBox .statItem {
+    width: 50%;
+    padding: 2rem;
+    font-size: 1.8rem;
+    font-weight: bold;
+    border-bottom: 1px solid white;
+  }
+
+  /* phone portrait */
+@media screen and (max-width: 900px) {
+    .formWrapper {
+        flex-flow: row wrap;
+    }
+  }
