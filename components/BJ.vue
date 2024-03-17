@@ -97,10 +97,11 @@
                     <p>Lowest profit: {{ Number(lowestProfit).toFixed(4) }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Wager: {{ wager }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
+                    <p>Wager: {{ Number(wager).toFixed(4) }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
                 </div>
             </div>
         </div>
+        <p class="version">v0.0.1</p>
     </div>
 </template>
 <script setup>
@@ -650,7 +651,7 @@ const handleEndRound = (data) => {
             if (currentLoosingStreak.value > highestLoosingStreak.value) highestLoosingStreak.value = currentLoosingStreak.value;
         }
 
-        wager.value += nextbet.value;
+        wager.value += Number(nextbet.value);
         console.log("Wager value:", wager.value);
         profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
         balance.value = Number(data.data.bet.cur_balance);

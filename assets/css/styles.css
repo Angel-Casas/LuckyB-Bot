@@ -263,6 +263,12 @@ button:hover {
     border-bottom: 1px solid white;
   }
 
+  .version {
+    font-size: 2rem;
+    width: 100%;
+    text-align: center;
+  }
+
   /* phone portrait */
 @media screen and (max-width: 900px) {
     .formWrapper {
