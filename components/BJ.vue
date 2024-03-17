@@ -101,7 +101,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.1</p>
+        <p class="version">v0.0.2</p>
     </div>
 </template>
 <script setup>
@@ -651,7 +651,7 @@ const handleEndRound = (data) => {
             if (currentLoosingStreak.value > highestLoosingStreak.value) highestLoosingStreak.value = currentLoosingStreak.value;
         }
 
-        wager.value += Number(nextbet.value);
+        wager.value += Number(data.data.bet.amount);
         console.log("Wager value:", wager.value);
         profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
         balance.value = Number(data.data.bet.cur_balance);
