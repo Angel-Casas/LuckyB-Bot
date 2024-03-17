@@ -1,5 +1,6 @@
 import CryptoJS from 'crypto-js';
 import Fingerprint2 from 'fingerprintjs2';
+import { Buffer } from 'buffer';
 
 export const generateHash = (data) => {
     const buff = new Buffer(data);
