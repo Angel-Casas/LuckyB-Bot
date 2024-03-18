@@ -86,6 +86,18 @@
                     <p>Highest loosing streak: {{ highestLoosingStreak }}</p>
                 </div>
                 <div class="statItem">
+                    <p>Doubles made: {{ totalDoubles }}</p>
+                </div>
+                <div class="statItem">
+                    <p>Splits made: {{ totalSplits }}</p>
+                </div>
+                <div class="statItem">
+                    <p>Blackjacks landed: {{ totalBlackJacks }}</p>
+                </div>
+                <div class="statItem">
+                    <p>Total busted Hits: {{ totalBustedHits }}</p>
+                </div>
+                <div class="statItem">
                     <p>Bets: {{ bets }}</p>
                 </div>
                 <div class="statItem">
@@ -102,7 +114,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.3</p>
+        <p class="version">v0.0.4</p>
     </div>
 </template>
 <script setup>
@@ -152,7 +164,11 @@ const uuid = ref(""),
    currentWinStreak = ref(0),
    currentLoosingStreak = ref(0),
    highestProfit = ref(0),
-   lowestProfit = ref(0);
+   lowestProfit = ref(0),
+   totalDoubles = ref(0),
+   totalSplits = ref(0),
+   totalBlackJacks = ref(0),
+   totalBustedHits = ref(0);
 
 /* ACTIONS */
 
@@ -334,6 +350,7 @@ const handleOnMessageArrived = (event) => {
                 console.log("Splitting for first time");
                 splitted.value = true;
                 currentHand.value = 0;
+                totalSplits.value++;
             } else {
                 console.log("Attempting to split for second time");
                 return;
@@ -346,6 +363,7 @@ const handleOnMessageArrived = (event) => {
             // DOUBLE
             console.log("RECEIVED DOUBLE", betId.value);
             console.log(message.value);
+            totalDoubles.value++;
             if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
                 currentHand.value = 1;
                 return handleSplitResult(message.value);
@@ -477,10 +495,12 @@ const handleResult = (data) => {
     
     if (data.data.blackjack.player[0].value === 21) {
         console.log("Landed blackjack");
+        totalBlackJacks.value++;
         // return;
     }
     if (data.data.blackjack.player[0].value > 21) {
         console.log("Busted");
+        totalBustedHits.value++;
         return;
     }
 

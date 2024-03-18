@@ -8,6 +8,7 @@
     --white: rgb(255, 255, 255);
     --yellow: rgb(255, 255, 0);
     --main-green: rgb(89, 255, 172);
+    --secondary-green: rgb(19, 255, 93);
     --main-gold: rgb(255, 209, 76);
     --bg-light: var(--white);
     --bg-dark: var(--primary);
@@ -56,6 +57,12 @@ h4 {
 }
 .white {
     background-color: var(--white);
+}
+.profitText {
+  color: var(--secondary-green);
+}
+.looseText {
+  color: var(--danger);
 }
 
 .formWrapper {
