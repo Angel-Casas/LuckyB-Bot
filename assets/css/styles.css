@@ -169,6 +169,7 @@ button {
     background-color: var(--yellow);
     color: var(--background);
     padding: 20px;
+    margin: 5px;
     border-radius: 3px;
     font-weight: bold;
     font-size: 18px;
