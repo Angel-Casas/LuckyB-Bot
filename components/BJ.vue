@@ -751,11 +751,13 @@ const setLocalStorageContent = () => {
 
 const loadLocalStorageContent = () => {
     let data = JSON.parse(localStorage.getItem("userData"));
-    if (data.nextbet) nextbet.value = data.nextbet;
-    if (data.currency) currency.value = data.currency;
-    if (data.uuid) uuid.value = data.uuid;
-    if (data.token) token.value = data.token;
-    console.log("Loaded settings from Local Storage.");
+    if (data) {
+        if (data.nextbet) nextbet.value = data.nextbet;
+        if (data.currency) currency.value = data.currency;
+        if (data.uuid) uuid.value = data.uuid;
+        if (data.token) token.value = data.token;
+        console.log("Loaded settings from Local Storage.");
+    }
 }
 
 onMounted(() => {
