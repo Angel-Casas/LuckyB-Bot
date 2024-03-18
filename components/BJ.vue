@@ -16,6 +16,7 @@
                     <button @click="disconnect" v-else>Disconnect</button>
                     <button @click="subscribe" v-if="liveSignal && room_id === 0">Subscribe</button>
                     <button @click="unsubscribe" v-if="liveSignal && room_id !== 0">Unsubscribe</button>
+                    <button @click="setLocalStorageContent">Save Settings</button>
                 </div>
                 <div class="info">
                     <h4>- HOW TO -</h4>
@@ -101,7 +102,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.2</p>
+        <p class="version">v0.0.3</p>
     </div>
 </template>
 <script setup>
@@ -736,4 +737,28 @@ const disconnect = () => {
         console.log(error);
     }
 };
+
+const setLocalStorageContent = () => {
+    let data = {
+        nextbet: nextbet.value,
+        currency: currency.value,
+        uuid: uuid.value,
+        token: token.value,
+    };
+    localStorage.setItem('userData', JSON.stringify(data));
+    console.log("Saved settings to Local Storage.");
+}
+
+const loadLocalStorageContent = () => {
+    let data = JSON.parse(localStorage.getItem("userData"));
+    if (data.nextbet) nextbet.value = data.nextbet;
+    if (data.currency) currency.value = data.currency;
+    if (data.uuid) uuid.value = data.uuid;
+    if (data.token) token.value = data.token;
+    console.log("Loaded settings from Local Storage.");
+}
+
+onMounted(() => {
+    loadLocalStorageContent();
+})
 </script>
