@@ -168,9 +168,7 @@ const uuid = ref(""),
    totalDoubles = ref(0),
    totalSplits = ref(0),
    totalBlackJacks = ref(0),
-   totalBustedHits = ref(0),
-   timeout = ref(),
-   timeoutDuration = ref(15000);
+   totalBustedHits = ref(0);
 
 /* ACTIONS */
 
@@ -200,13 +198,6 @@ const initConnect = () => {
     }
 };
 
-const handleTimeout = () => {
-    // This function will be called if no message is received after the specified time
-    console.log('No message received for ' + (timeoutDuration.value / 1000) + ' seconds.');
-    // Call your function here to handle the timeout
-    start();
-}
-
 const createConnection = async () => {
     console.log("Starting connection to WebSocket Server");
     try {
@@ -224,7 +215,6 @@ const createConnection = async () => {
                 console.log("Connected!");
                 liveSignal.value = true;
                 reconnectingSignal.value = false;
-                timeout.value = setTimeout(handleTimeout, timeoutDuration.value);
                 subscribe();
             },
             onFailure: () => {
@@ -249,16 +239,18 @@ const createConnection = async () => {
         };
         
         luckyBird.value.onMessageArrived = (event) => {
-            // console.log("MESSAGE RECEIVED");
-                handleOnMessageArrived(event);
+            // clearTimeout(iddleTimeout);
+            // iddleTimeout = setTimeout(() => {
+            //     console.log("15 seconds without actions, attempting to Stand.");
+            //     handleSendStand();
+            // }, iddleValue);
+            handleOnMessageArrived(event);
         };
 
-        luckyBird.value.onMessageDelivered = (event) => {
-            // console.log("Message delivered.");
-            // console.log(event);
-            clearTimeout(timeout.value);
-            timeout.value = setTimeout(handleTimeout, timeoutDuration.value);
-        };
+        // luckyBird.value.onMessageDelivered = (event) => {
+        //     console.log("Message delivered.");
+        //     console.log(event);
+        // };
 
         luckyBird.value.connect(options);
     } catch (error) {
