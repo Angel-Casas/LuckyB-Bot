@@ -112,6 +112,9 @@
                 <div class="statItem">
                     <p>Wager: {{ Number(wager).toFixed(4) }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
                 </div>
+                <div class="statItem">
+                    <p>RTP: {{ Number(rtp).toFixed(4) }}</p>
+                </div>
             </div>
         </div>
         <p class="version">v0.0.4</p>
@@ -170,7 +173,8 @@ const uuid = ref(""),
    totalBlackJacks = ref(0),
    totalBustedHits = ref(0),
    timeout = ref(),
-   timeoutDuration = ref(15000);
+   timeoutDuration = ref(15000),
+   rtp = ref(0);
 
 /* ACTIONS */
 
@@ -323,7 +327,7 @@ const handleOnMessageArrived = (event) => {
         if (message.value.code === 4701) {
             // INITIAL
             betId.value++;
-            console.log("RECEIVED INITIAL", betId.value);
+            console.log("RECEIVED INITIAL", `#${betId.value}`);
             // console.log(message.value);
             splitted.value = 0;
             if (message.value.data.errcode === 0) return handleResult(message.value);
@@ -331,7 +335,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4703) {
             // HIT
-            console.log("RECEIVED HIT", betId.value);
+            console.log("RECEIVED HIT", `#${betId.value}`);
             console.log(message.value);
 
             if (splitted.value && message.value.data.errcode === 0 && message.value.data.blackjack.player[currentHand.value]) {
@@ -341,7 +345,7 @@ const handleOnMessageArrived = (event) => {
         }
         if (message.value.code === 4704) {
             // STAND
-            console.log("RECEIVED STAND", betId.value);
+            console.log("RECEIVED STAND", `#${betId.value}`);
             console.log(message.value);
             if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
                 currentHand.value = 1;
@@ -352,7 +356,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4705) {
             // SPLIT
-            console.log("RECEIVED SPLIT", betId.value);
+            console.log("RECEIVED SPLIT", `#${betId.value}`);
             console.log(message.value);
             if (!splitted.value) {
                 console.log("Splitting for first time");
@@ -369,7 +373,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4706) {
             // DOUBLE
-            console.log("RECEIVED DOUBLE", betId.value);
+            console.log("RECEIVED DOUBLE", `#${betId.value}`);
             console.log(message.value);
             totalDoubles.value++;
             if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
@@ -383,7 +387,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4707) {
             // END
-            console.log("RECEIVED END", betId.value);
+            console.log("RECEIVED END", `#${betId.value}`);
             currentHand.value = 0;
             // console.log(message.value);
             return handleEndRound(message.value);
@@ -402,6 +406,9 @@ const start = () => {
 const stop = () => {
     console.log("Stopping game.");
     run.value = false;
+    if (timeout.value) {
+        clearTimeout(timeout.value);
+    }
 };
 
 const startBetting = () => {
@@ -683,9 +690,11 @@ const handleEndRound = (data) => {
         wager.value += Number(data.data.bet.amount);
         console.log("Wager value:", wager.value);
         profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
+        console.log("Profit:", Number((data.data.bet.win - data.data.bet.amount)).toFixed(4));
         balance.value = Number(data.data.bet.cur_balance);
         bets.value++;
         Number(data.data.payout) > 0 ? wins.value++ : losses.value++;
+        rtp.value = 100+(wager.value/profit.value)/100;
 
         if (splitted.value) splitted.value = false;
 
@@ -701,7 +710,7 @@ const handleEndRound = (data) => {
         }
 
         if (stopOnWin.value) {
-            stopOnWin.value = false;
+            // stopOnWin.value = false;
             stop();
         }
 

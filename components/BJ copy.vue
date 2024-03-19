@@ -673,7 +673,7 @@ const handleEndRound = (data) => {
         }
 
         wager.value += Number(data.data.bet.amount);
-        console.log("Wager value:", wager.value);
+        console.log("Wager value:", Number(wager.value).toFixed(4));
         profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
         balance.value = Number(data.data.bet.cur_balance);
         bets.value++;
