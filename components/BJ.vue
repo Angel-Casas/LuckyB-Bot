@@ -117,7 +117,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.4</p>
+        <p class="version">v0.0.5</p>
     </div>
 </template>
 <script setup>
@@ -327,7 +327,7 @@ const handleOnMessageArrived = (event) => {
         if (message.value.code === 4701) {
             // INITIAL
             betId.value++;
-            console.log("RECEIVED INITIAL", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED INITIAL`);
             // console.log(message.value);
             splitted.value = 0;
             if (message.value.data.errcode === 0) return handleResult(message.value);
@@ -335,17 +335,24 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4703) {
             // HIT
-            console.log("RECEIVED HIT", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED HIT`);
             console.log(message.value);
 
             if (splitted.value && message.value.data.errcode === 0 && message.value.data.blackjack.player[currentHand.value]) {
+                if (currentHand.value === 0 && message.value.data.blackjack.player[currentHand.value].value >= 21) {
+                    console.log("Busted first hand or got BJ.");
+                    currentHand.value = 1;
+                } else if (currentHand.value === 1 && message.value.data.blackjack.player[currentHand.value].value >= 21) {
+                    console.log("Busted second hand or got BJ.");
+                    return;
+                }
                 return handleSplitResult(message.value);
             }
             if (message.value.data.errcode === 0) return handleResult(message.value);
         }
         if (message.value.code === 4704) {
             // STAND
-            console.log("RECEIVED STAND", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED STAND`);
             console.log(message.value);
             if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
                 currentHand.value = 1;
@@ -356,7 +363,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4705) {
             // SPLIT
-            console.log("RECEIVED SPLIT", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED SPLIT`);
             console.log(message.value);
             if (!splitted.value) {
                 console.log("Splitting for first time");
@@ -373,7 +380,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4706) {
             // DOUBLE
-            console.log("RECEIVED DOUBLE", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED DOUBLE`);
             console.log(message.value);
             totalDoubles.value++;
             if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
@@ -387,7 +394,7 @@ const handleOnMessageArrived = (event) => {
 
         if (message.value.code === 4707) {
             // END
-            console.log("RECEIVED END", `#${betId.value}`);
+            console.log(`#${betId.value} RECEIVED END`);
             currentHand.value = 0;
             // console.log(message.value);
             return handleEndRound(message.value);
@@ -634,7 +641,10 @@ const handleNextBetting = (dPoint, pPoint, actions, sameCard, pHaveA) => {
 
         const index = actions.value.find((item) => item === action.value);
 
-        if (!index) action.value = "S";
+        if (!index && action.value === "D") {
+            console.log("Can't Double so will Hit");
+            action.value = "H";
+        } else if (!index) action.value = "S";
 
         console.log("Next action:", action.value);
         // console.log(`Wait ${timeoutBet.value}s to send next bet`);
@@ -674,7 +684,8 @@ const handleEndRound = (data) => {
             console.log("Player point:", data.data.blackjack.player[1].value);
         }
 
-        let result = Number(data.data.payout) > 0 ? "WIN" : "LOOSE";
+        let payout = Number(data.data.bet.win) - Number(data.data.bet.amount);
+        let result = payout > 0 ? "WIN" : "LOOSE";
         console.log("Result:", result);
 
         if (result === "WIN") {
@@ -690,10 +701,10 @@ const handleEndRound = (data) => {
         wager.value += Number(data.data.bet.amount);
         console.log("Wager value:", wager.value);
         profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
-        console.log("Profit:", Number((data.data.bet.win - data.data.bet.amount)).toFixed(4));
+        console.log("Profit:", Number(payout).toFixed(4));
         balance.value = Number(data.data.bet.cur_balance);
         bets.value++;
-        Number(data.data.payout) > 0 ? wins.value++ : losses.value++;
+        Number(payout) >= 0 ? wins.value++ : losses.value++;
         rtp.value = 100+(wager.value/profit.value);
 
         if (splitted.value) splitted.value = false;
