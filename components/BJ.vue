@@ -705,7 +705,7 @@ const handleEndRound = (data) => {
         balance.value = Number(data.data.bet.cur_balance);
         bets.value++;
         Number(payout) >= 0 ? wins.value++ : losses.value++;
-        rtp.value = 100+(wager.value/profit.value);
+        rtp.value = 100+(profit.value/wager.value)*100;
 
         if (splitted.value) splitted.value = false;
 
