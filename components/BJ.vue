@@ -117,7 +117,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.5</p>
+        <p class="version">v0.0.5a</p>
     </div>
 </template>
 <script setup>
@@ -644,6 +644,9 @@ const handleNextBetting = (dPoint, pPoint, actions, sameCard, pHaveA) => {
         if (!index && action.value === "D") {
             console.log("Can't Double so will Hit");
             action.value = "H";
+        } else if (!index && action.value === "Ds") {
+            console.log("Can't Double so will Stand.");
+            action.value = "S";
         } else if (!index) action.value = "S";
 
         console.log("Next action:", action.value);

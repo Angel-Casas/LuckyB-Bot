@@ -571,7 +571,7 @@ export const softScript = () => {
         },
         {
         point: [3, 18],
-        action: "D",
+        action: "Ds",
         },
         {
         point: [3, 19],
@@ -607,7 +607,7 @@ export const softScript = () => {
         },
         {
         point: [4, 18],
-        action: "D",
+        action: "Ds",
         },
         {
         point: [4, 19],
@@ -643,7 +643,7 @@ export const softScript = () => {
         },
         {
         point: [5, 18],
-        action: "D",
+        action: "Ds",
         },
         {
         point: [5, 19],
@@ -679,7 +679,7 @@ export const softScript = () => {
         },
         {
         point: [6, 18],
-        action: "D",
+        action: "Ds",
         },
         {
         point: [6, 19],
