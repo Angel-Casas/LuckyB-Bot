@@ -58,6 +58,12 @@ h4 {
 .white {
     background-color: var(--white);
 }
+.red {
+  color: var(--danger);
+}
+.green {
+  color: var(--secondary-green);
+}
 .profitText {
   color: var(--secondary-green);
 }

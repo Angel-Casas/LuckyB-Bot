@@ -5,17 +5,17 @@
                 <h3>User Input</h3>
                 <div class="userInput">
                     <label for="uuid">UUID:</label>
-                    <input type="text" v-model="uuid" id="uuid" maxlength="100" minlength="1" placeholder="UUID" required>
+                    <input type="text" v-model="uid" id="uuid" maxlength="100" minlength="1" placeholder="UUID" required>
                 </div>
                 <div class="userInput">
                     <label for="token">TOKEN:</label>
                     <input type="text" v-model="token" id="token" maxlength="100" minlength="1" placeholder="Token" required>
                 </div>
                 <div class="inputButtons">
-                    <button @click="createConnection" :disabled="!uuid || !token" v-if="!liveSignal">Connect</button>
+                    <button @click="connect" :disabled="!uid || !token" v-if="!liveSignal">Connect</button>
                     <button @click="disconnect" v-else>Disconnect</button>
-                    <button @click="subscribe" v-if="liveSignal && room_id === 0">Subscribe</button>
-                    <button @click="unsubscribe" v-if="liveSignal && room_id !== 0">Unsubscribe</button>
+                    <button @click="subscribe" v-if="liveSignal && room_id === null">Subscribe</button>
+                    <button @click="unsubscribe" v-if="liveSignal && room_id !== null">Unsubscribe</button>
                     <button @click="setLocalStorageContent">Save Settings</button>
                 </div>
                 <div class="info">
@@ -38,13 +38,12 @@
                     </select>
                 </div>
                 <div class="userInput">
-                    <label for="nextbet">BET SIZE:</label>
-                    <input type="text" v-model="nextbet" id="nextbet">
+                    <label for="betAmount">BET SIZE:</label>
+                    <input type="text" v-model="betAmount" id="betAmount">
                 </div>
                 <div class="actionButtons">
-                    <button @click="start" v-if="!starting">Start</button>
-                    <button @click="stop" v-else>Stop</button>
-                    <button @click="stopOnWin = !stopOnWin">Stop on next win ({{ stopOnWin }})</button>
+                    <button @click="start" v-if="!run">Start</button>
+                    <button @click="stop" v-else>Stop on next win ({{ stopOnWin }})</button>
                 </div>
                 <h4>Player Actions</h4>
                 <div class="playerButtons">
@@ -62,28 +61,31 @@
             <h3 class="subtitle">Statsistics</h3>
             <div class="itemBox">
                 <div class="statItem">
-                    <p>Balance: {{ Number(balance).toFixed(4) }}</p>
+                    <p>Balance: {{ Number(balance).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Initial balance: {{ Number(initialBalance).toFixed(4) }}</p>
+                    <p>Initial balance: {{ Number(initialBalance).toFixed(4) }}  {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Bet Amount: {{ Number(nextbet).toFixed(4) }}</p>
+                    <p>Bet Amount: {{ Number(betAmount).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
                     <p>Room id: {{ room_id }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Wins: {{ wins }}</p>
+                    <span>Wins: <span :class="winPercentage >= 43 ? 'green' : 'red'">{{ wins }}</span></span>(<span :class="winPercentage >= 43 ? 'green' : 'red'">{{ winPercentage }}%</span><span> Average should be 43%)</span>
                 </div>
                 <div class="statItem">
                     <p>Highest win streak: {{ highestWinStreak }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Losses: {{ losses }}</p>
+                    <span>Losses: </span><span :class="losePercentage <= 48 ? 'green' : 'red'">{{ losses }}</span>(<span :class="winPercentage >= 43 ? 'green' : 'red'">{{ losePercentage }}%</span><span> Average should be 48%)</span>
                 </div>
                 <div class="statItem">
                     <p>Highest loosing streak: {{ highestLoosingStreak }}</p>
+                </div>
+                <div class="statItem">
+                    <span>Ties: </span><span :class="tiePercentage <= 8 ? 'green' : 'red'">{{ ties }}</span> (<span :class="tiePercentage <= 8 ? 'green' : 'red'">{{tiePercentage}}%</span><span> Average should be 8%)</span>
                 </div>
                 <div class="statItem">
                     <p>Doubles made: {{ totalDoubles }}</p>
@@ -95,29 +97,29 @@
                     <p>Blackjacks landed: {{ totalBlackJacks }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Total busted Hits: {{ totalBustedHits }}</p>
+                    <p>Total busted Hits: {{ totalBusted }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Bets: {{ bets }}</p>
+                    <p>Bets: {{ totalBets }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Current profit: {{ Number(profit).toFixed(4) }}</p>
+                    <p  :class="profit >= 0 ? 'green' : 'red'">Current profit: {{ Number(profit).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Highest profit: {{ Number(highestProfit).toFixed(4) }}</p>
+                    <p>Highest profit: {{ Number(highestProfit).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Lowest profit: {{ Number(lowestProfit).toFixed(4) }}</p>
+                    <p>Lowest profit: {{ Number(lowestProfit).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Wager: {{ Number(wager).toFixed(4) }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
+                    <p>Wager: {{ Number(wager).toFixed(4) }} {{ currency }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
                 </div>
                 <div class="statItem">
-                    <p>RTP: {{ Number(rtp).toFixed(4) }}</p>
+                    <p  :class="rtp >= 98 ? 'green' : 'red'">RTP: {{ Number(rtp).toFixed(4) }}%</p>
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.5a</p>
+        <p class="version">v0.0.6</p>
     </div>
 </template>
 <script setup>
@@ -129,588 +131,634 @@ import { generateFingerprint } from '~/composables/utils';
 
 
 /* VARIABLES */
-const uuid = ref(""),
-     token = ref(""),
+const uid = ref(null),
+     token = ref(null),
   currency = ref("usd"),
-   nextbet = ref(0.0001),
-   balance = ref(0),
-   initialBalance = ref(0),
-   room_id = ref(0),
-   luckyBird = ref(),
+   betAmount = ref(null),
+   balance = ref(null),
+   initialBalance = ref(null),
+   room_id = ref(null),
+   luckyBird = ref(null),
    liveSignal = ref(false),
    reconnectingSignal = ref(false),
-   starting = ref(false),
-   timestamp = ref(Date.now()),
-   message = ref(),
-   destination = ref("/n"),
-   fingerprint = ref(),
+   message = ref(null),
+   fingerprint = ref(null),
+   destination = '/n',
    run = ref(false),
-   dealerCards = ref(),
-   playerCards = ref(),
-   playerCardsLeft = ref(),
-   playerCardsRight = ref(),
-   timeoutBet = ref(5),
-   profitTarget = ref(100),
+   dealerCards = ref(null),
+   dealerPoints = ref(null),
+   playerCards = ref(null),
+   playerPoints = ref(null),
+   timeoutBet = 5,
    profit = ref(0),
-   wager = ref(0),
-   bets = ref(0),
+   wager = ref(null),
    losses = ref(0),
    wins = ref(0),
-   actions = ref(),
-   splitted = ref(false),
+   ties = ref(0),
+   winPercentage = ref(null),
+   losePercentage = ref(null),
+   tiePercentage = ref(null),
    action = ref(null),
-   betId = ref(0),
-   stopOnWin = ref(false),
+   actions = ref(null),
+   hasSplit = ref(false),
+   hasSplitAces = ref(false),
+   betId = ref(null),
+   stopOnWin = ref(true),
    currentHand = ref(0),
    highestWinStreak = ref(0),
    highestLoosingStreak = ref(0),
    currentWinStreak = ref(0),
-   currentLoosingStreak = ref(0),
+   currentLoseStreak = ref(0),
    highestProfit = ref(0),
+   totalBets = ref(0),
    lowestProfit = ref(0),
    totalDoubles = ref(0),
    totalSplits = ref(0),
    totalBlackJacks = ref(0),
-   totalBustedHits = ref(0),
-   timeout = ref(),
-   timeoutDuration = ref(15000),
-   rtp = ref(0);
+   totalBusted = ref(0),
+   timeout = ref(null),
+   timeoutDuration = 15000,
+   timeoutCounter = ref(0),
+   rtp = ref(0),
+   url = 'luckybird.io',
+   client = ref(null);
 
 /* ACTIONS */
 
-const initConnect = () => {
-    try {
-        timestamp.value = Date.now();
-        let key = token.value + "luckybird" + timestamp.value;
-        key = generateKey(key).substring(0, 8);
-        const data = {
-            code: 3012,
-            data: {
-                is_room: false,
-                fingerprint: fingerprint.value,
-                domain: "luckybird.io",
-                device: "pc",
-                timestamp: timestamp.value,
-                key,
-            },
-            uid: uuid.value,
-            token: token.value,
-        };
-        message.value = new Paho.Message(JSON.stringify(data));
-        message.value.destinationName = destination.value;
-        luckyBird.value.send(message.value);
-    } catch (error) {
-        console.log(error);
-    }
+const connect = () => {
+    client.value = new LuckyBirdClient(url);
+    
+    client.value.connect({
+        onSuccess: () => {
+            console.log("Connected successfully");
+        },
+        onFailure: (err) => {
+            console.error("Connection failed: ", err);
+        }
+    });
 };
 
-const handleTimeout = () => {
-    // This function will be called if no message is received after the specified time
-    console.log('No message received for ' + (timeoutDuration.value / 1000) + ' seconds.');
-    // Call your function here to handle the timeout
-    start();
+const start = () => {
+    run.value = true;
+    client.value.start();
+};
+
+const disconnect = () => {
+    run.value = false;
+    client.value.disconnect();
+};
+
+const stop = () => {
+    client.value.stop();
+};
+
+const handleSendHit = () => {
+    client.value.hit();
 }
 
-const createConnection = async () => {
-    console.log("Starting connection to WebSocket Server");
-    try {
+const handleSendStand = () => {
+    client.value.stand();
+}
+
+const handleSendSplit = () => {
+    client.value.split();
+}
+
+const handleSendDouble = () => {
+    client.value.double();
+}
+
+// CLASS
+
+class LuckyBirdClient {
+    constructor(url) {
+        this.gameData = null;
+        this.client = new Paho.Client(url, 443, uuidv4());
+        this.client.onConnectionLost = (event) => { this.handleOnConnectionLost(event) };
+        this.client.onMessageArrived = (event) => { this.handleOnMessageArrived(event) };
+        this.client.onMessageDelivered = (event) => { this.handleOnMessageDelivered(event) };
+    }
+
+    sendRequest(data) {
+        let message = new Paho.Message(JSON.stringify(data));
+        message.destinationName = destination;
+        setTimeout(this.client.send(message), timeoutBet.value * 1e3);
+    }
+
+    connect() {
+        console.log('Attempting to connect to WebSocket Server...');
         reconnectingSignal.value = true;
-
-        let uid4 = uuidv4();
-        // let iddleTimeout;
-        // let iddleValue = 15000; // Call if 15 seconds without response
-
-        luckyBird.value = new Paho.Client("wss://luckybird.io/mqtt", uid4);
-
         const options = {
             useSSL: true,
+            timeout: 10,
             onSuccess: () => {
-                console.log("Connected!");
-                liveSignal.value = true;
-                reconnectingSignal.value = false;
-                timeout.value = setTimeout(handleTimeout, timeoutDuration.value);
-                subscribe();
+                console.log('[LuckyBird] connected');
+                timeout.value = setTimeout(() => this.handleTimeout(), timeoutDuration);
+                this.subscribe();
+            },
+            onFailure: (message) => {
+                console.log('Failed to connect');
+                liveSignal.value = false;
+                console.log(message);
+            },
+        };
+
+        this.client.connect(options);
+    }
+
+    initialConnect() {
+        try {
+            const timestamp = Date.parse(new Date());
+            let key = token.value + 'luckybird' + timestamp;
+            key = generateKey(key).substring(0, 8);
+
+            const data = {
+                code: 3012,
+                data: {
+                    is_room: false,
+                    fingerprint: fingerprint.value,
+                    domain: 'luckybird.io',
+                    device: 'pc',
+                    timestamp,
+                    key
+                },
+                uid: uid.value,
+                token: token.value
+            };
+            this.sendRequest(data);
+        } catch (error) {
+            console.log('Failed to connect.');
+            console.log(error);
+        }
+    }
+
+    subscribe() {
+        console.log('Attempting to subscribe...');
+        this.client.subscribe(destination, {
+            qos: 1,
+            onSuccess: () => {
+                console.log('Successfully subscribed.');
+                Fingerprint2.get({}, (components) => {
+                    const values = components.map((component) => {
+                        if (
+                            component.key === 'canvas' ||
+                            component.key === 'webgl' ||
+                            component.key === 'fonts'
+                        ) {
+                            component.value = generateHash(component.value);
+                        }
+                        return component.value;
+                    });
+                    fingerprint.value = generateFingerprint(values);
+                    setTimeout(this.initialConnect(), 5000);
+                });
+            },
+            onFailure: (error) => {
+                console.log('Failed to subscribe');
+                console.log(error);
+            }
+        });
+    }
+
+    unsubscribe() {
+        console.log('Attempting to unsibscribe...');
+        const options = {
+            onSuccess: () => {
+                console.log('Unsubscribed');
+                room_id.value = null;
             },
             onFailure: () => {
-                console.log("Failed to connect.");
-                liveSignal.value = false;
+                console.log('Failed to unsubscribe');
+            }
+        };
+        this.client.unsubscribe(destination, options);
+    }
+
+    disconnect() {
+        console.log('Attempting to disconnect...');
+        try {
+            this.client.disconnect();
+        } catch (error) {
+            console.log('Failed to disconnect');
+            console.log(error);
+        }
+    };
+
+    start() {
+        const data = {
+            code: 4701,
+            data: {
+                amount: betAmount.value,
+                currency: String(currency.value).toLowerCase(),
+                room_id: room_id.value,
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
+
+    stop() {
+        stopOnWin.value = true;
+        if (timeout.value) {
+            clearTimeout(timeout.value);
+        }
+    }
+
+    handleInitial() {
+        console.log("Handling Initial");
+        const wallets = this.gameData.data.player.balances;
+        for (const item in wallets) {
+            if (item === String(currency.value).toLowerCase()) {
+                balance.value = Number(wallets[item].amount);
+                if (initialBalance.value === null) {
+                    initialBalance.value = balance.value;
+                    console.log(`Initial Balance: ${initialBalance.value} ${currency.value}`);
+                }
+
+                const data = {
+                    code: 3022,
+                    data: {
+                        game_name: "blackJack",
+                    },
+                    uid: uid.value,
+                    token: token.value,
+                };
+
+                this.sendRequest(data);
             }
         }
+    }
 
-        
-        luckyBird.value.onConnectionLost = (error) => {
-            liveSignal.value = false;
-            if (error.errorCode === 0) {
+    hit() {
+        const data = {
+            code: 4703,
+            data: {
+                room_id: room_id.value,
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
+
+    stand() {
+        const data = {
+            code: 4704,
+            data: {
+                room_id: room_id.value,
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
+
+    split() {
+        const data = {
+            code: 4705,
+            data: {
+                room_id: room_id.value,
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
+
+    double() {
+        const data = {
+            code: 4706,
+            data: {
+                room_id: room_id.value,
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
+
+    handleOnMessageArrived(message) {
+        try {
+            const decoder = new TextDecoder('utf-8');
+            this.gameData = decoder.decode(message.payloadBytes);
+            this.gameData = this.gameData
+            .replace(/\u0000/, "")
+            .replace(/[/]/, "")
+            .replace(/'/g, '"');
+
+            const index = this.gameData.indexOf('{');
+            this.gameData = this.gameData.slice(index, this.gameData.length);
+            this.gameData = JSON.parse(this.gameData);
+
+            if (![2250, 3121, 3013, 3030, 3409, 3512, 3572, 3580, 3590, 3944, 4021, 4031, 4033].includes(this.gameData.code)) console.log(this.gameData);
+
+            switch (this.gameData.code) {
+                case 3012:
+                    this.handleInitial();
+                    break;
+                case 3022:
+                    this.handleCheckConnectedToRoom();
+                    break;
+                case 4701:
+                    console.log('------INITIAL-------');
+                    if (run.value) this.handleResult();
+                    break;
+                case 4703:
+                    console.log('------HIT-------');
+                    this.handleResult();
+                    break;
+                case 4704:
+                    console.log('------STAND-------');
+                    if (hasSplit.value && currentHand.value === 0) currentHand.value = 1;
+                    else return;
+                    this.handleResult();
+                    break;
+                case 4705:
+                    console.log('------SPLIT-------');
+                    if (hasSplitAces.value) return;
+                    hasSplit.value = true;
+                    totalSplits.value++;
+                    this.handleResult();
+                    break;
+                case 4706:
+                    console.log('------DOUBLE-------');
+                    totalDoubles.value++;
+                    if (hasSplit.value && currentHand.value === 0) currentHand.value = 1;
+                    else return;
+                    this.handleResult();
+                    break;
+                case 4707:
+                    console.log('------END-------');
+                    if (this.gameData.data.msg) console.log(this.gameData.data.msg);
+                    if (this.gameData.data.msg) {
+                        console.log("MISTAKE");
+                        console.log(this.gameData.data.msg);
+                        return;
+                    }
+                    this.handleEndRound();
+                    break;
+            }
+        } catch(error) {
+            console.log(error);
+        }
+    }
+
+    handleOnConnectionLost(error) {
+        liveSignal.value = false;
+        if (error.errorCode === 0) {
                 console.log("Successfully disconnected.");
             } else {
                 console.log("Connection lost with error:");
                 console.log(error);
                 console.log("Attempting to reconnect...");
                 reconnectingSignal.value = true;
-                // CHANGE THIS TO ADD CONTINUE BETTING IF RUNNING.
-                createConnection();
+                this.connect();
             }
-        };
-        
-        luckyBird.value.onMessageArrived = (event) => {
-            // console.log("MESSAGE RECEIVED");
-                handleOnMessageArrived(event);
-        };
-
-        luckyBird.value.onMessageDelivered = (event) => {
-            // console.log("Message delivered.");
-            // console.log(event);
-            clearTimeout(timeout.value);
-            timeout.value = setTimeout(handleTimeout, timeoutDuration.value);
-        };
-
-        luckyBird.value.connect(options);
-    } catch (error) {
-        reconnectingSignal.value = false;
-        console.log("error:", error);
     }
-};
 
-const handleOnMessageArrived = (event) => {
-    // console.log(event.payloadString);
-    try {
-        const decoder = new TextDecoder("utf-8");
-        message.value = decoder.decode(event.payloadBytes);
-        message.value = message.value
-        .replace(/\u0000/, "")
-        .replace(/[/]/, "")
-        .replace(/'/g, '"');
-        
-        const index = message.value.indexOf("{");
-        message.value = message.value.slice(index, message.value.length);
-        message.value = JSON.parse(message.value);
-
-        if (message.value.code === 3012) {
-            const wallets = message.value.data.player.balances;
-            for (const item in wallets) {
-                // console.log(`${item}: ${wallets[item].amount}`);
-                if (item === String(currency.value).toLowerCase()) {
-                    balance.value = Number(wallets[item].amount);
-                    if (initialBalance.value === 0) {
-                        console.log("Setting initial balance.");
-                        initialBalance.value = balance.value;
-                    }
-                    console.log("Currency: ", currency.value);
-                    console.log("Balance: ", balance.value);
-
-                    const data = {
-                        code: 3022,
-                        data: {
-                            game_name: "blackJack",
-                        },
-                        uid: uuid.value,
-                        token: token.value,
-                    };
-
-                    message.value = new Paho.Message(JSON.stringify(data));
-                    message.value.destinationName = destination.value;
-                    luckyBird.value.send(message.value);
-                }
-            }
-        }
-
-        if (message.value.code === 3022) {
-            console.log(message.value);
-            if (message.value.data.errcode === -1) {
-                console.log("The game is under maintenance.");
-            } else {
-                room_id.value = message.value.data.room_id;
-                console.log("Connected to a BJ room.");
-            }
-        }
-
-        if (message.value.code === 4701) {
-            // INITIAL
-            betId.value++;
-            console.log(`#${betId.value} RECEIVED INITIAL`);
-            // console.log(message.value);
-            splitted.value = 0;
-            if (message.value.data.errcode === 0) return handleResult(message.value);
-        }
-
-        if (message.value.code === 4703) {
-            // HIT
-            console.log(`#${betId.value} RECEIVED HIT`);
-            console.log(message.value);
-
-            if (splitted.value && message.value.data.errcode === 0 && message.value.data.blackjack.player[currentHand.value]) {
-                if (currentHand.value === 0 && message.value.data.blackjack.player[currentHand.value].value >= 21) {
-                    console.log("Busted first hand or got BJ.");
-                    currentHand.value = 1;
-                } else if (currentHand.value === 1 && message.value.data.blackjack.player[currentHand.value].value >= 21) {
-                    console.log("Busted second hand or got BJ.");
-                    return;
-                }
-                return handleSplitResult(message.value);
-            }
-            if (message.value.data.errcode === 0) return handleResult(message.value);
-        }
-        if (message.value.code === 4704) {
-            // STAND
-            console.log(`#${betId.value} RECEIVED STAND`);
-            console.log(message.value);
-            if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
-                currentHand.value = 1;
-                return handleSplitResult(message.value);
-            }
-            // if (message.value.data.errcode === 0) return handleResult(message.value);
-            }
-
-        if (message.value.code === 4705) {
-            // SPLIT
-            console.log(`#${betId.value} RECEIVED SPLIT`);
-            console.log(message.value);
-            if (!splitted.value) {
-                console.log("Splitting for first time");
-                splitted.value = true;
-                currentHand.value = 0;
-                totalSplits.value++;
-            } else {
-                console.log("Attempting to split for second time");
-                return;
-            }
-            if (message.value.data.errcode === 0) return handleSplitResult(message.value);
-            // if (message.value.data.errcode === -1) return handleSendStand();
-        }
-
-        if (message.value.code === 4706) {
-            // DOUBLE
-            console.log(`#${betId.value} RECEIVED DOUBLE`);
-            console.log(message.value);
-            totalDoubles.value++;
-            if (splitted.value && message.value.data.errcode === 0 && currentHand.value === 0) {
-                currentHand.value = 1;
-                return handleSplitResult(message.value);
-            } else if (splitted.value && message.value.data.errcode === 0 && message.value.data.blackjack.player[currentHand]) {
-                return handleSplitResult(message.value);
-            }
-            // if (message.value.data.errcode === 0) return handleResult(message.value);
-        }
-
-        if (message.value.code === 4707) {
-            // END
-            console.log(`#${betId.value} RECEIVED END`);
-            currentHand.value = 0;
-            // console.log(message.value);
-            return handleEndRound(message.value);
-        }
-    } catch (err) {
-        console.log(err);
-    }
-}
-
-const start = () => {
-    console.log("Starting game.");
-    run.value = true;
-    startBetting();
-};
-
-const stop = () => {
-    console.log("Stopping game.");
-    run.value = false;
-    if (timeout.value) {
+    handleOnMessageDelivered(message) {
+        console.log("SENT MESSAGE");
+        console.log(message);
         clearTimeout(timeout.value);
-    }
-};
-
-const startBetting = () => {
-    const data = {
-        code: 4701,
-        data: {
-            amount: nextbet.value,
-            currency: String(currency.value).toLowerCase(),
-            room_id: room_id.value,
-        },
-        uid: uuid.value,
-        token: token.value,
-    };
-    if (run.value) {
-        console.log("SENDING INITIAL");
-        handleSendBetting(data);
-    }
-};
-
-const handleSendBetting = (data) => {
-    if (run.value) {
-        message.value = new Paho.Message(JSON.stringify(data));
-        message.value.destinationName = destination.value;
-        luckyBird.value.send(message.value);
-    }
-};
-
-const handleSendHit = () => {
-    const data = {
-        code: 4703,
-        data: {
-            room_id: room_id.value,
-        },
-        uid: uuid.value,
-        token: token.value,
-    };
-    if (run.value) {
-        console.log("SENDING HIT");
-        handleSendBetting(data);
-    }
-};
-
-const handleSendStand = () => {
-    const data = {
-        code: 4704,
-        data: {
-            room_id: room_id.value,
-        },
-        uid: uuid.value,
-        token: token.value,
-    };
-    if (run.value) {
-        console.log("SENDING STAND");
-        handleSendBetting(data);
-    }
-};
-
-const handleSendSplit = () => {
-    const data = {
-        code: 4705,
-        data: {
-            room_id: room_id.value,
-        },
-        uid: uuid.value,
-        token: token.value,
-    };
-    if (run.value) {
-        console.log("SENDING SPLIT");
-        handleSendBetting(data);
-    }
-};
-
-const handleSendDouble = () => {
-    const data = {
-        code: 4706,
-        data: {
-            room_id: room_id.value,
-        },
-        uid: uuid.value,
-        token: token.value,
-    };
-    if (run.value) {
-        console.log("SENDING DOUBLE");
-        handleSendBetting(data);
-    }
-};
-
-const handleResult = (data) => {
-    console.log("Handle result:", data);
-    if (run.value) {
-        dealerCards.value = data.data.blackjack.dealer[0].cards.map((item) => showCard(item));
-        console.log("Dealer cards:", dealerCards.value);
-        console.log("Dealer point:", data.data.blackjack.dealer[0].value);
-
-        playerCards.value = data.data.blackjack.player[0].cards.map((item) => showCard(item));
-        console.log("Player cards:", playerCards.value);
-        console.log("Player point:", data.data.blackjack.player[0].value);
-    }
-    
-    if (data.data.blackjack.player[0].value === 21) {
-        console.log("Landed blackjack");
-        totalBlackJacks.value++;
-        // return;
-    }
-    if (data.data.blackjack.player[0].value > 21) {
-        console.log("Busted");
-        totalBustedHits.value++;
-        return;
+        timeout.value = setTimeout(() => this.handleTimeout(), timeoutDuration);
     }
 
-    let sameCard = null;
-
-
-    if (
-        data.data.blackjack.player[0].cards[0].number ===
-        data.data.blackjack.player[0].cards[1].number
-    ) {
-        console.log("Same card.");
-        sameCard = true;
+    handleCheckConnectedToRoom() {
+        if (this.gameData.errCode === -1) {
+            console.log('The game is under maintenance.');
+            return this.disconnect();
+        } else {
+            room_id.value = this.gameData.data.room_id;
+            console.log(`Connected to BJ room #${room_id.value}.`);
+            liveSignal.value = true;
+            reconnectingSignal.value = false;
+        }
     }
 
-    let pHaveA = null;
-    if (
-        data.data.blackjack.player[0].cards[0].number === 1 ||
-        data.data.blackjack.player[0].cards[1].number === 1
-    ) {
-        // console.log("Have Ace.");
-        pHaveA = true;
+    handleResult() {
+        // Check if error
+        if (this.gameData.data.errcode !== 0) {
+            console.log('Error from last action.');
+            return;
+        }
+
+        if (this.gameData.data.blackjack) this.calculateHandAndPoints();
+
+        if (dealerCards.value[0].value === 'A') {
+            console.log("INSURANCE OFFERED");
+        }
+
+        // Check if split
+        if (playerCards.value.length > 1 && hasSplit.value) return this.handleSplitResult();
+        
+        // Check for BlackJack or 21
+        if (playerPoints.value[currentHand.value] === 21) {
+            if (playerCards.value[0].length === 2) {
+                console.log('Landed blackjack');
+                totalBlackJacks.value++;
+            } else {
+                console.log('Won hand with 21.');
+            }
+            return;
+        }
+
+        // Check for busted hand.
+        if (playerPoints.value[currentHand.value] > 21) {
+            console.log('Busted hand');
+            totalBusted.value++;
+            return;
+        }
+
+        let sameCard;
+
+        if (playerCards.value[0][0].value === 'A' && playerCards.value[0][1].value === 'A') {
+            hasSplitAces.value = true;
+            return this.split();
+        }
+
+        const pHaveA = this.hasAceWithValue(playerCards.value[0]);
+        
+        const many = playerCards.value[0].length;
+        
+        if (playerCards.value[0][0].value === playerCards.value[0][1].value && many < 3) sameCard = true;
+
+        if (sameCard) {
+            actions.value = ['H', 'S', 'D', 'P'];
+        } else if (many > 2) {
+            actions.value = ['H', 'S'];
+        } else {
+            actions.value = ['H', 'S', 'D'];
+        }
+
+        return this.handleNextAction(sameCard, pHaveA);
     }
 
-    const many = data.data.blackjack.player[0].cards.length;
+    handleSplitResult() {
+        console.log('Hand chosen: ', currentHand.value);
 
-    if (sameCard && many < 3) {
-        actions.value = ["Hit", "Stand", "Double", "Split"];
-    } else if (many > 2) {
-        actions.value = ["Hit", "Stand"];
-    } else {
-        actions.value = ["Hit", "Stand", "Double"];
-    }
+        let currentPlayerHand = playerCards.value[currentHand.value];
 
-    return handleNextBetting(
-        data.data.blackjack.dealer[0].value,
-        data.data.blackjack.player[0].value,
-        actions,
-        sameCard,
-        pHaveA
-    );
-};
+        if (currentPlayerHand.value === 21) {
+            if (currentPlayerHand.cards.length > 1) {
+                console.log(`Landed 21 on ${currentHand.value === 0 ? 'first hand' : 'second hand'}.`);
+            } else {
+                console.log(`Landed blackjack on ${currentHand.value === 0 ? 'first hand' : 'second hand'}.`);
+            }
 
+            if (currentHand.value === 0) {
+                currentHand.value = 1;
+                return this.handleSplitResult();
+            } else {
+                return this.handleEndRound();
+            }
+        } else if (currentPlayerHand.value > 21) {
+            console.log(`Busted ${currentHand.value === 0 ? 'first hand' : 'second hand'}.`);
 
-const handleSplitResult = (data) => {
-    console.log("Handle Split Result:", data);
-    console.log("Hand chosen: ", currentHand.value);
-    if (run.value) {
-        dealerCards.value = data.data.blackjack.dealer[0].cards.map((item) => showCard(item));
-        console.log("Dealer cards:", dealerCards.value);
-        console.log("Dealer point:", data.data.blackjack.dealer[0].value);
+            if (currentHand.value === 0) {
+                currentHand.value = 1;
+                return this.handleSplitResult();
+            } else {
+                return this.handleEndRound();
+            }
+        }
+        
+        const many = playerCards.value[currentHand.value].length;
 
-        playerCardsLeft.value = data.data.blackjack.player[1].cards.map((item) => showCard(item));
-        console.log("Player cards LEFT:", playerCardsLeft.value);
-        console.log("Player point LEFT:", data.data.blackjack.player[1].value);
-
-        playerCardsRight.value = data.data.blackjack.player[0].cards.map((item) => showCard(item));
-        console.log("Player cards RIGHT:", playerCardsRight.value);
-        console.log("Player point RIGHT:", data.data.blackjack.player[0].value);
-
-        const many = data.data.blackjack.player[currentHand.value].cards.length;
+        const pHaveA = this.hasAceWithValue(playerCards.value[currentHand.value]);
 
         if (many > 2) {
-            actions.value = ["Hit", "Stand"];
-        } else actions.value = ["Hit", "Stand", "Double"];
+            actions.value = ['H', 'S'];
+        } else {
+            actions.value = ['H', 'S', 'D'];
+        }
 
-
-        handleNextBetting(
-            data.data.blackjack.dealer[0].value,
-            data.data.blackjack.player[currentHand.value].value,
-            actions,
-            null,
-            null
-        );
+        return this.handleNextAction(null, pHaveA)
     }
-};
 
-const handleNextBetting = (dPoint, pPoint, actions, sameCard, pHaveA) => {
-    console.log(dPoint, pPoint, actions.value, sameCard, pHaveA);
-    if (run.value) {
+    handleNextAction(sameCard, pHaveA) {
+        console.log(playerPoints.value);
+        console.log(playerPoints.value[0]);
+        console.log(`D ${dealerPoints.value} vs P ${playerPoints.value[currentHand.value]}, ${sameCard}, ${pHaveA}`);
+
         action.value = null;
 
         if (sameCard) {
-            console.log("Split Script");
+            console.log('Split Script');
             splitScript().map((item) => {
-                if (item.point[0] === dPoint && item.point[1] === pPoint) {
+                if (item.point.join() === `${dealerPoints.value},${playerPoints.value[currentHand.value]}`) {
                     action.value = item.action;
                     return;
                 }
             });
         } else if (pHaveA) {
-            console.log("Soft Script");
+            console.log('Soft Script');
             softScript().map((item) => {
-                if (item.point.join() === `${dPoint},${pPoint}`)
-                    return (action.value = item.action);
+                if (item.point.join() === `${dealerPoints.value},${playerPoints.value[currentHand.value]}`) {
+                    action.value = item.action;
+                    return;
+                }
             });
         } else {
-            console.log("Hard Script");
+            console.log('Hard Script');
             hardScript().map((item) => {
-                if (item.point.join() === `${dPoint},${pPoint}`) {
+                if (item.point.join() === `${dealerPoints.value},${playerPoints.value[currentHand.value]}`) {
                     action.value = item.action;
                     return;
                 }
             });
         }
 
-        if (!action.value) action.value = "H";
-
-        actions.value = actions.value.map((item) => {
-            let a = "";
-            if (item === "Hit") a = "H";
-            if (item === "Stand") a = "S";
-            if (item === "Double") a = "D";
-            if (item === "Split") a = "P";
-            return a;
-        });
+        if (!action.value) action.value = 'H';
 
         const index = actions.value.find((item) => item === action.value);
 
-        if (!index && action.value === "D") {
-            console.log("Can't Double so will Hit");
-            action.value = "H";
-        } else if (!index && action.value === "Ds") {
-            console.log("Can't Double so will Stand.");
-            action.value = "S";
-        } else if (!index) action.value = "S";
+        if (!index && action.value === 'D') {
+            console.log('Cannot double so will hit');
+            action.value = 'H';
+        } else if (!index && action.value == 'Ds') {
+            console.log('Cannot double so will stand');
+            action.value = 'S';
+        } else if (!index) action.value = 'S';
 
-        console.log("Next action:", action.value);
-        // console.log(`Wait ${timeoutBet.value}s to send next bet`);
+        console.log('Next Action: ', action.value);
 
         switch (action.value) {
-            case "D":
-                setTimeout(handleSendDouble(), timeoutBet.value * 1e3);
+            case 'S':
+                this.stand()
                 break;
-            case "H":
-                setTimeout(handleSendHit(), timeoutBet.value * 1e3);
+            case 'H':
+                this.hit();
                 break;
-            case "P":
-                setTimeout(handleSendSplit(), timeoutBet.value * 1e3);
+            case 'P':
+                this.split();
                 break;
-            case "S":
-                setTimeout(handleSendStand(), timeoutBet.value * 1e3);
+            case 'D':
+                this.double();
                 break;
         };
     };
-};
 
-const handleEndRound = (data) => {
-    console.log("Handle End Round:", data);
+    handleEndRound() {
+        // Wager
+        let totalBetAmount = Number(this.gameData.data.bet.amount);
+        wager.value += totalBetAmount;
 
-    if (run.value) {
-        dealerCards.value = data.data.blackjack.dealer[0].cards.map((item) => showCard(item));
-        console.log("Dealer cards:", dealerCards.value);
-        console.log("Dealer point:", data.data.blackjack.dealer[0].value);
-
-        playerCards.value = data.data.blackjack.player[0].cards.map((item) => showCard(item));
-        console.log("Player cards:", playerCards.value);
-        console.log("Player point:", data.data.blackjack.player[0].value);
-
-        if (data.data.blackjack.player[1]) {
-            playerCards.value = data.data.blackjack.player[1].cards.map((item) => showCard(item));
-            console.log("Player cards:", playerCards.value);
-            console.log("Player point:", data.data.blackjack.player[1].value);
-        }
-
-        let payout = Number(data.data.bet.win) - Number(data.data.bet.amount);
-        let result = payout > 0 ? "WIN" : "LOOSE";
-        console.log("Result:", result);
-
-        if (result === "WIN") {
+        // Profit{
+        let payout = Number(this.gameData.data.bet.payout);
+        profit.value += payout;
+        balance.value = this.gameData.data.user.balances[currency.value].amount;
+        let trueProfit = balance.value - initialBalance.value;
+        if (payout > 0) {
+            wins.value++;
             currentWinStreak.value++;
-            currentLoosingStreak.value = 0;
+            currentLoseStreak.value = 0;
             if (currentWinStreak.value > highestWinStreak.value) highestWinStreak.value = currentWinStreak.value;
-        } else {
-            currentLoosingStreak.value++;
+        } else if (payout === 0) {
+            ties.value++;
             currentWinStreak.value = 0;
-            if (currentLoosingStreak.value > highestLoosingStreak.value) highestLoosingStreak.value = currentLoosingStreak.value;
+            currentLoseStreak.value = 0;
+        } else {
+            losses.value++;
+            currentLoseStreak.value++;
+            currentWinStreak.value = 0;
+            if (currentLoseStreak.value > highestLoosingStreak.value) highestLoosingStreak.value = currentLoseStreak.value;
         }
 
-        wager.value += Number(data.data.bet.amount);
-        console.log("Wager value:", wager.value);
-        profit.value += Number(data.data.bet.win) - Number(data.data.bet.amount);
-        console.log("Profit:", Number(payout).toFixed(4));
-        balance.value = Number(data.data.bet.cur_balance);
-        bets.value++;
-        Number(payout) >= 0 ? wins.value++ : losses.value++;
-        rtp.value = 100+(profit.value/wager.value)*100;
+        
+        // RTP and Percentages
+        rtp.value = wager.value ? 100 + (profit.value / wager.value) * 100 : 0;
+        totalBets.value++;
+        const calculatePercentage = (part) => ((part / totalBets.value) * 100).toFixed(2);
+        winPercentage.value = calculatePercentage(wins.value);
+        losePercentage.value = calculatePercentage(losses.value);
+        tiePercentage.value = calculatePercentage(ties.value);
+        
+        
+        // Logs
+        console.log(`Bet amount:      ${betAmount.value} ${currency.value}`);
+        console.log(`Total bet:       ${totalBetAmount} ${currency.value}`);
+        console.log(`Wager:           ${wager.value.toFixed(4)} ${currency.value} (${(wager.value / initialBalance.value).toFixed(2)}x)`);
+        console.log(`Round profit:    ${payout.toFixed(4)} ${currency.value}`);
+        console.log(`True profit:     ${trueProfit.toFixed(4)} ${currency.value}`);
+        console.log(`Total profit:    ${profit.value.toFixed(4)} ${currency.value}`);
+        console.log(`Wins:            ${wins.value} (${winPercentage.value}% Average should be 43%)`);
+        console.log(`Losses:          ${losses.value} (${losePercentage.value}% Average should be 48%)`);
+        console.log(`Ties:            ${ties.value} (${tiePercentage.value}% Average should be 8%)`);
+        console.log(`RTP:             ${rtp.value.toFixed(2)} %`);
+        console.log(`Bets made:       ${totalBets.value}`);
+        console.log(`Initial balance: ${initialBalance.value} ${currency.value}`);
+        console.log(`Balance:         ${balance.value} ${currency.value}`);
 
-        if (splitted.value) splitted.value = false;
+        // Reset variables
+        playerCards.value = null;
+        dealerCards.value = null;
+        playerPoints.value = null;
+        dealerPoints.value = null;
+        hasSplit.value = false;
+        hasSplitAces.value = false;
+        currentHand.value = 0;
+        timeoutCounter.value = 0;
 
         if (profit.value > highestProfit.value) {
             highestProfit.value = profit.value;
@@ -719,81 +767,1659 @@ const handleEndRound = (data) => {
             lowestProfit.value = profit.value;
         }
 
-        if (profit.value >= profitTarget.value) {
-            return stop(), console.log("Target profit has been reached!");
-        }
-
         if (stopOnWin.value) {
-            // stopOnWin.value = false;
-            stop();
-        }
-
-        if (run.value) {
-            setTimeout(startBetting(), timeoutBet.value * 1e3);
+            stopOnWin.value = false;
+            run.value = false;
+            return;
+        } else {
+            return this.start();
         }
     }
-}
 
+    handleTimeout() {
+        console.log('No message received for ' + (timeoutDuration / 1000) + ' seconds.');
+        timeoutCounter.value++;
+        if (timeoutCounter.value == 2) {
+            console.log('Did not accept start, will attempt to stand.');
+            if (run.value) return this.stand();
+        } else if (timeoutCounter.value >= 3) return this.stop();
+        if (run.value) return this.start();
+    }
 
-const subscribe = () => {
-    console.log("Attempting to subscribe.");
-    luckyBird.value.subscribe(destination.value, {
-        qos: 1,
-        onSuccess: () => {
-            console.log("Successfully subscribed.");
-            Fingerprint2.get({}, (components) => {
-                const values = components.map((component) => {
-                if (
-                    component.key === "canvas" ||
-                    component.key === "webgl" ||
-                    component.key === "fonts"
-                ) {
-                    component.value = generateHash(component.value);
-                }
-                return component.value;
-                });
-                fingerprint.value = generateFingerprint(values);
-                setTimeout(initConnect(), 5000); // 5 seconds delay
-            });
+    calculateHandAndPoints() {
+        dealerCards.value = this.gameData.data.blackjack.dealer[0].cards.map((item) => {return this.findCard(item)});
+        dealerPoints.value = this.gameData.data.blackjack.dealer[0].value;
+        playerCards.value = this.gameData.data.blackjack.player.map(hands => hands.cards.map((item) => {return this.findCard(item)}));
+        playerPoints.value = this.gameData.data.blackjack.player.map(hands => hands.value);
 
-            
-        },
-        onFailure: (error) => {
-            console.log("Failed to subscribe.");
-            console.log(error);
+        this.printHand(`(${dealerPoints.value}) Dealer hand`, dealerCards.value);
+        this.printHand(`(${playerPoints.value[0]}) Player hand 1`, playerCards.value[0]);
+        if (playerCards.value.length > 1) this.printHand(`(${playerPoints.value[1]}) Player hand 1`, playerCards.value[1]);
+    }
+
+    printHand(title, cards) {
+        let hand = `${title}: `;
+        for (let i = 0; i < cards.length; i++) {
+            hand += `${cards[i].value} ${cards[i].icon} | `;
         }
-    });
-}
+        console.log(hand);
+    }
 
-const unsubscribe = () => {
-    console.log("Attempting to unsubscribe.");
-    const options = {
-        onSuccess: () => {
-                console.log("Unsubscribed!");
-                room_id.value = 0;
+    hasAceWithValue(cards) {
+        let totalPoints = 0;
+        let aceCount = 0;
+
+        for (let i = 0; i < cards.length; i++) {
+            const card = cards[i];
+            let number = card.value === 'A' ? 1 : (card.value === 'K' || card.value === 'Q' || card.value === 'J') ? 10 : Number(card.value); 
+            console.log(card);
+            console.log(number);
+            if (number === 1) {
+                totalPoints++;
+                aceCount++;
+            } else {
+                totalPoints += number;
+            }
+        }
+
+        if (aceCount > 0 && totalPoints + 10 <= 21) {
+            return true;
+        }
+
+        return false;
+    }
+
+    findCard = (card) => {
+        const typeCard = [
+            {
+                type: 1,
+                icon: "♦",
+              },
+              {
+                type: 2,
+                icon: "♥",
+              },
+              {
+                type: 3,
+                icon: "♠️",
+              },
+              {
+                type: 4,
+                icon: "♣",
+              },
+        ];
+    
+        const cardList = [
+            {
+              type: 1,
+              name: "A",
             },
-        onFailure: () => {
-            console.log("Failed to unsubscribe.");
-        }
-    };
-    luckyBird.value.unsubscribe(destination.value, options);
+            {
+              type: 2,
+              name: "2",
+            },
+            {
+              type: 3,
+              name: "3",
+            },
+            {
+              type: 4,
+              name: "4",
+            },
+            {
+              type: 5,
+              name: "5",
+            },
+            {
+              type: 6,
+              name: "6",
+            },
+            {
+              type: 7,
+              name: "7",
+            },
+            {
+              type: 8,
+              name: "8",
+            },
+            {
+              type: 9,
+              name: "9",
+            },
+            {
+              type: 10,
+              name: "10",
+            },
+            {
+              type: 11,
+              name: "J",
+            },
+            {
+              type: 12,
+              name: "Q",
+            },
+            {
+              type: 13,
+              name: "K",
+            },
+          ];
+    
+          let n, t;
+    
+          cardList.map((item) => {
+            if (item.type === card.number) n = item.name;
+          });
+    
+          typeCard.map((item) => {
+            if (item.type === card.type) t = item.icon;
+          });
+    
+          return { value: n, icon: t };
+    }
+
+    splitScript() {
+        return [
+            {
+                point: [2, 4],
+                action: "P",
+              },
+              {
+                point: [2, 6],
+                action: "P",
+              },
+              {
+                point: [2, 8],
+                action: "H",
+              },
+              {
+                point: [2, 10],
+                action: "D",
+              },
+              {
+                point: [2, 12],
+                action: "P",
+              },
+              {
+                point: [2, 14],
+                action: "P",
+              },
+              {
+                point: [2, 16],
+                action: "P",
+              },
+              {
+                point: [2, 18],
+                action: "P",
+              },
+              {
+                point: [2, 20],
+                action: "S",
+              },
+              {
+                point: [2, 22],
+                action: "P",
+              },
+              {
+                point: [3, 4],
+                action: "P",
+              },
+              {
+                point: [3, 6],
+                action: "P",
+              },
+              {
+                point: [3, 8],
+                action: "H",
+              },
+              {
+                point: [3, 10],
+                action: "D",
+              },
+              {
+                point: [3, 12],
+                action: "P",
+              },
+              {
+                point: [3, 14],
+                action: "P",
+              },
+              {
+                point: [3, 16],
+                action: "P",
+              },
+              {
+                point: [3, 18],
+                action: "P",
+              },
+              {
+                point: [3, 20],
+                action: "S",
+              },
+              {
+                point: [3, 22],
+                action: "P",
+              },
+              {
+                point: [4, 4],
+                action: "P",
+              },
+              {
+                point: [4, 6],
+                action: "P",
+              },
+              {
+                point: [4, 8],
+                action: "H",
+              },
+              {
+                point: [4, 10],
+                action: "D",
+              },
+              {
+                point: [4, 12],
+                action: "P",
+              },
+              {
+                point: [4, 14],
+                action: "P",
+              },
+              {
+                point: [4, 16],
+                action: "P",
+              },
+              {
+                point: [4, 18],
+                action: "P",
+              },
+              {
+                point: [4, 20],
+                action: "S",
+              },
+              {
+                point: [4, 22],
+                action: "P",
+              },
+              {
+                point: [5, 4],
+                action: "P",
+              },
+              {
+                point: [5, 6],
+                action: "P",
+              },
+              {
+                point: [5, 8],
+                action: "P",
+              },
+              {
+                point: [5, 10],
+                action: "D",
+              },
+              {
+                point: [5, 12],
+                action: "P",
+              },
+              {
+                point: [5, 14],
+                action: "P",
+              },
+              {
+                point: [5, 16],
+                action: "P",
+              },
+              {
+                point: [5, 18],
+                action: "P",
+              },
+              {
+                point: [5, 20],
+                action: "S",
+              },
+              {
+                point: [5, 22],
+                action: "P",
+              },
+              {
+                point: [6, 4],
+                action: "P",
+              },
+              {
+                point: [6, 6],
+                action: "P",
+              },
+              {
+                point: [6, 8],
+                action: "P",
+              },
+              {
+                point: [6, 10],
+                action: "D",
+              },
+              {
+                point: [6, 12],
+                action: "P",
+              },
+              {
+                point: [6, 14],
+                action: "P",
+              },
+              {
+                point: [6, 16],
+                action: "P",
+              },
+              {
+                point: [6, 18],
+                action: "P",
+              },
+              {
+                point: [6, 20],
+                action: "S",
+              },
+              {
+                point: [6, 22],
+                action: "P",
+              },
+              {
+                point: [7, 4],
+                action: "P",
+              },
+              {
+                point: [7, 6],
+                action: "P",
+              },
+              {
+                point: [7, 8],
+                action: "H",
+              },
+              {
+                point: [7, 10],
+                action: "D",
+              },
+              {
+                point: [7, 12],
+                action: "H",
+              },
+              {
+                point: [7, 14],
+                action: "P",
+              },
+              {
+                point: [7, 16],
+                action: "P",
+              },
+              {
+                point: [7, 18],
+                action: "S",
+              },
+              {
+                point: [7, 20],
+                action: "S",
+              },
+              {
+                point: [7, 22],
+                action: "P",
+              },
+              {
+                point: [8, 4],
+                action: "H",
+              },
+              {
+                point: [8, 6],
+                action: "H",
+              },
+              {
+                point: [8, 8],
+                action: "H",
+              },
+              {
+                point: [8, 10],
+                action: "D",
+              },
+              {
+                point: [8, 12],
+                action: "H",
+              },
+              {
+                point: [8, 14],
+                action: "H",
+              },
+              {
+                point: [8, 16],
+                action: "P",
+              },
+              {
+                point: [8, 18],
+                action: "P",
+              },
+              {
+                point: [8, 20],
+                action: "S",
+              },
+              {
+                point: [8, 22],
+                action: "P",
+              },
+              {
+                point: [9, 4],
+                action: "H",
+              },
+              {
+                point: [9, 6],
+                action: "H",
+              },
+              {
+                point: [9, 8],
+                action: "H",
+              },
+              {
+                point: [9, 10],
+                action: "D",
+              },
+              {
+                point: [9, 12],
+                action: "H",
+              },
+              {
+                point: [9, 14],
+                action: "H",
+              },
+              {
+                point: [9, 16],
+                action: "P",
+              },
+              {
+                point: [9, 18],
+                action: "P",
+              },
+              {
+                point: [9, 20],
+                action: "S",
+              },
+              {
+                point: [9, 22],
+                action: "P",
+              },
+              {
+                point: [10, 4],
+                action: "H",
+              },
+              {
+                point: [10, 6],
+                action: "H",
+              },
+              {
+                point: [10, 8],
+                action: "H",
+              },
+              {
+                point: [10, 10],
+                action: "H",
+              },
+              {
+                point: [10, 12],
+                action: "H",
+              },
+              {
+                point: [10, 14],
+                action: "H",
+              },
+              {
+                point: [10, 16],
+                action: "P",
+              },
+              {
+                point: [10, 18],
+                action: "S",
+              },
+              {
+                point: [10, 20],
+                action: "S",
+              },
+              {
+                point: [10, 22],
+                action: "P",
+              },
+              {
+                point: [11, 4],
+                action: "H",
+              },
+              {
+                point: [11, 6],
+                action: "H",
+              },
+              {
+                point: [11, 8],
+                action: "H",
+              },
+              {
+                point: [11, 10],
+                action: "H",
+              },
+              {
+                point: [11, 12],
+                action: "H",
+              },
+              {
+                point: [11, 14],
+                action: "H",
+              },
+              {
+                point: [11, 16],
+                action: "P",
+              },
+              {
+                point: [11, 18],
+                action: "S",
+              },
+              {
+                point: [11, 20],
+                action: "S",
+              },
+              {
+                point: [11, 22],
+                action: "P",
+              },
+        ];
+    }
+    
+    softScript() {
+        return [
+            {
+            point: [2, 13],
+            action: "H",
+            },
+            {
+            point: [2, 14],
+            action: "H",
+            },
+            {
+            point: [2, 15],
+            action: "H",
+            },
+            {
+            point: [2, 16],
+            action: "H",
+            },
+            {
+            point: [2, 17],
+            action: "H",
+            },
+            {
+            point: [2, 18],
+            action: "S",
+            },
+            {
+            point: [2, 19],
+            action: "S",
+            },
+            {
+            point: [2, 20],
+            action: "S",
+            },
+            {
+            point: [2, 21],
+            action: "S",
+            },
+            {
+            point: [3, 13],
+            action: "H",
+            },
+            {
+            point: [3, 14],
+            action: "H",
+            },
+            {
+            point: [3, 15],
+            action: "H",
+            },
+            {
+            point: [3, 16],
+            action: "H",
+            },
+            {
+            point: [3, 17],
+            action: "D",
+            },
+            {
+            point: [3, 18],
+            action: "Ds",
+            },
+            {
+            point: [3, 19],
+            action: "S",
+            },
+            {
+            point: [3, 20],
+            action: "S",
+            },
+            {
+            point: [3, 21],
+            action: "S",
+            },
+            {
+            point: [4, 13],
+            action: "S",
+            },
+            {
+            point: [4, 14],
+            action: "S",
+            },
+            {
+            point: [4, 15],
+            action: "S",
+            },
+            {
+            point: [4, 16],
+            action: "D",
+            },
+            {
+            point: [4, 17],
+            action: "D",
+            },
+            {
+            point: [4, 18],
+            action: "Ds",
+            },
+            {
+            point: [4, 19],
+            action: "S",
+            },
+            {
+            point: [4, 20],
+            action: "S",
+            },
+            {
+            point: [4, 21],
+            action: "S",
+            },
+            {
+            point: [5, 13],
+            action: "H",
+            },
+            {
+            point: [5, 14],
+            action: "D",
+            },
+            {
+            point: [5, 15],
+            action: "D",
+            },
+            {
+            point: [5, 16],
+            action: "D",
+            },
+            {
+            point: [5, 17],
+            action: "D",
+            },
+            {
+            point: [5, 18],
+            action: "Ds",
+            },
+            {
+            point: [5, 19],
+            action: "S",
+            },
+            {
+            point: [5, 20],
+            action: "S",
+            },
+            {
+            point: [5, 21],
+            action: "S",
+            },
+            {
+            point: [6, 13],
+            action: "D",
+            },
+            {
+            point: [6, 14],
+            action: "D",
+            },
+            {
+            point: [6, 15],
+            action: "D",
+            },
+            {
+            point: [6, 16],
+            action: "D",
+            },
+            {
+            point: [6, 17],
+            action: "D",
+            },
+            {
+            point: [6, 18],
+            action: "Ds",
+            },
+            {
+            point: [6, 19],
+            action: "S",
+            },
+            {
+            point: [6, 20],
+            action: "S",
+            },
+            {
+            point: [6, 21],
+            action: "S",
+            },
+            {
+            point: [7, 13],
+            action: "H",
+            },
+            {
+            point: [7, 14],
+            action: "H",
+            },
+            {
+            point: [7, 15],
+            action: "H",
+            },
+            {
+            point: [7, 16],
+            action: "H",
+            },
+            {
+            point: [7, 17],
+            action: "H",
+            },
+            {
+            point: [7, 18],
+            action: "S",
+            },
+            {
+            point: [7, 19],
+            action: "S",
+            },
+            {
+            point: [7, 20],
+            action: "S",
+            },
+            {
+            point: [7, 21],
+            action: "S",
+            },
+            {
+            point: [8, 13],
+            action: "H",
+            },
+            {
+            point: [8, 14],
+            action: "H",
+            },
+            {
+            point: [8, 15],
+            action: "H",
+            },
+            {
+            point: [8, 16],
+            action: "H",
+            },
+            {
+            point: [8, 17],
+            action: "H",
+            },
+            {
+            point: [8, 18],
+            action: "S",
+            },
+            {
+            point: [8, 19],
+            action: "S",
+            },
+            {
+            point: [8, 20],
+            action: "S",
+            },
+            {
+            point: [8, 21],
+            action: "S",
+            },
+            {
+            point: [9, 13],
+            action: "H",
+            },
+            {
+            point: [9, 14],
+            action: "H",
+            },
+            {
+            point: [9, 15],
+            action: "H",
+            },
+            {
+            point: [9, 16],
+            action: "H",
+            },
+            {
+            point: [9, 17],
+            action: "H",
+            },
+            {
+            point: [9, 18],
+            action: "H",
+            },
+            {
+            point: [9, 19],
+            action: "S",
+            },
+            {
+            point: [9, 20],
+            action: "S",
+            },
+            {
+            point: [9, 21],
+            action: "S",
+            },
+            {
+            point: [10, 13],
+            action: "H",
+            },
+            {
+            point: [10, 14],
+            action: "H",
+            },
+            {
+            point: [10, 15],
+            action: "H",
+            },
+            {
+            point: [10, 16],
+            action: "H",
+            },
+            {
+            point: [10, 17],
+            action: "H",
+            },
+            {
+            point: [10, 18],
+            action: "H",
+            },
+            {
+            point: [10, 19],
+            action: "S",
+            },
+            {
+            point: [10, 20],
+            action: "S",
+            },
+            {
+            point: [10, 21],
+            action: "S",
+            },
+            {
+            point: [11, 13],
+            action: "H",
+            },
+            {
+            point: [11, 14],
+            action: "H",
+            },
+            {
+            point: [11, 15],
+            action: "H",
+            },
+            {
+            point: [11, 16],
+            action: "H",
+            },
+            {
+            point: [11, 17],
+            action: "H",
+            },
+            {
+            point: [11, 18],
+            action: "H",
+            },
+            {
+            point: [11, 19],
+            action: "S",
+            },
+            {
+            point: [11, 20],
+            action: "S",
+            },
+            {
+            point: [11, 21],
+            action: "S",
+            },
+        ]
+    }
+    
+    hardScript() {
+        return [
+            {
+                point: [2, 4],
+                action: "H",
+              },
+              {
+                point: [2, 5],
+                action: "H",
+              },
+              {
+                point: [2, 6],
+                action: "H",
+              },
+              {
+                point: [2, 7],
+                action: "H",
+              },
+              {
+                point: [2, 8],
+                action: "H",
+              },
+              {
+                point: [2, 9],
+                action: "H",
+              },
+              {
+                point: [2, 10],
+                action: "D",
+              },
+              {
+                point: [2, 11],
+                action: "D",
+              },
+              {
+                point: [2, 12],
+                action: "H",
+              },
+              {
+                point: [2, 13],
+                action: "S",
+              },
+              {
+                point: [2, 14],
+                action: "S",
+              },
+              {
+                point: [2, 15],
+                action: "S",
+              },
+              {
+                point: [2, 16],
+                action: "S",
+              },
+              {
+                point: [2, 17],
+                action: "S",
+              },
+              {
+                point: [2, 18],
+                action: "S",
+              },
+              {
+                point: [2, 19],
+                action: "S",
+              },
+              {
+                point: [2, 20],
+                action: "S",
+              },
+              {
+                point: [2, 21],
+                action: "S",
+              },
+              {
+                point: [3, 4],
+                action: "H",
+              },
+              {
+                point: [3, 5],
+                action: "H",
+              },
+              {
+                point: [3, 6],
+                action: "H",
+              },
+              {
+                point: [3, 7],
+                action: "H",
+              },
+              {
+                point: [3, 8],
+                action: "H",
+              },
+              {
+                point: [3, 9],
+                action: "D",
+              },
+              {
+                point: [3, 10],
+                action: "D",
+              },
+              {
+                point: [3, 11],
+                action: "D",
+              },
+              {
+                point: [3, 12],
+                action: "H",
+              },
+              {
+                point: [3, 13],
+                action: "S",
+              },
+              {
+                point: [3, 14],
+                action: "S",
+              },
+              {
+                point: [3, 15],
+                action: "S",
+              },
+              {
+                point: [3, 16],
+                action: "S",
+              },
+              {
+                point: [3, 17],
+                action: "S",
+              },
+              {
+                point: [3, 18],
+                action: "S",
+              },
+              {
+                point: [3, 19],
+                action: "S",
+              },
+              {
+                point: [3, 20],
+                action: "S",
+              },
+              {
+                point: [3, 21],
+                action: "S",
+              },
+              {
+                point: [4, 4],
+                action: "H",
+              },
+              {
+                point: [4, 5],
+                action: "H",
+              },
+              {
+                point: [4, 6],
+                action: "H",
+              },
+              {
+                point: [4, 7],
+                action: "H",
+              },
+              {
+                point: [4, 8],
+                action: "H",
+              },
+              {
+                point: [4, 9],
+                action: "D",
+              },
+              {
+                point: [4, 10],
+                action: "D",
+              },
+              {
+                point: [4, 11],
+                action: "D",
+              },
+              {
+                point: [4, 12],
+                action: "S",
+              },
+              {
+                point: [4, 13],
+                action: "S",
+              },
+              {
+                point: [4, 14],
+                action: "S",
+              },
+              {
+                point: [4, 15],
+                action: "S",
+              },
+              {
+                point: [4, 16],
+                action: "S",
+              },
+              {
+                point: [4, 17],
+                action: "S",
+              },
+              {
+                point: [4, 18],
+                action: "S",
+              },
+              {
+                point: [4, 19],
+                action: "S",
+              },
+              {
+                point: [4, 20],
+                action: "S",
+              },
+              {
+                point: [4, 21],
+                action: "S",
+              },
+              {
+                point: [5, 4],
+                action: "H",
+              },
+              {
+                point: [5, 5],
+                action: "H",
+              },
+              {
+                point: [5, 6],
+                action: "H",
+              },
+              {
+                point: [5, 7],
+                action: "H",
+              },
+              {
+                point: [5, 8],
+                action: "H",
+              },
+              {
+                point: [5, 9],
+                action: "D",
+              },
+              {
+                point: [5, 10],
+                action: "D",
+              },
+              {
+                point: [5, 11],
+                action: "D",
+              },
+              {
+                point: [5, 12],
+                action: "S",
+              },
+              {
+                point: [5, 13],
+                action: "S",
+              },
+              {
+                point: [5, 14],
+                action: "S",
+              },
+              {
+                point: [5, 15],
+                action: "S",
+              },
+              {
+                point: [5, 16],
+                action: "S",
+              },
+              {
+                point: [5, 17],
+                action: "S",
+              },
+              {
+                point: [5, 18],
+                action: "S",
+              },
+              {
+                point: [5, 19],
+                action: "S",
+              },
+              {
+                point: [5, 20],
+                action: "S",
+              },
+              {
+                point: [5, 21],
+                action: "S",
+              },
+              {
+                point: [6, 4],
+                action: "H",
+              },
+              {
+                point: [6, 5],
+                action: "H",
+              },
+              {
+                point: [6, 6],
+                action: "H",
+              },
+              {
+                point: [6, 7],
+                action: "H",
+              },
+              {
+                point: [6, 8],
+                action: "H",
+              },
+              {
+                point: [6, 9],
+                action: "D",
+              },
+              {
+                point: [6, 10],
+                action: "D",
+              },
+              {
+                point: [6, 11],
+                action: "D",
+              },
+              {
+                point: [6, 12],
+                action: "S",
+              },
+              {
+                point: [6, 13],
+                action: "S",
+              },
+              {
+                point: [6, 14],
+                action: "S",
+              },
+              {
+                point: [6, 15],
+                action: "S",
+              },
+              {
+                point: [6, 16],
+                action: "S",
+              },
+              {
+                point: [6, 17],
+                action: "S",
+              },
+              {
+                point: [6, 18],
+                action: "S",
+              },
+              {
+                point: [6, 19],
+                action: "S",
+              },
+              {
+                point: [6, 20],
+                action: "S",
+              },
+              {
+                point: [6, 21],
+                action: "S",
+              },
+              {
+                point: [7, 4],
+                action: "H",
+              },
+              {
+                point: [7, 5],
+                action: "H",
+              },
+              {
+                point: [7, 6],
+                action: "H",
+              },
+              {
+                point: [7, 7],
+                action: "H",
+              },
+              {
+                point: [7, 8],
+                action: "H",
+              },
+              {
+                point: [7, 9],
+                action: "H",
+              },
+              {
+                point: [7, 10],
+                action: "D",
+              },
+              {
+                point: [7, 11],
+                action: "D",
+              },
+              {
+                point: [7, 12],
+                action: "H",
+              },
+              {
+                point: [7, 13],
+                action: "H",
+              },
+              {
+                point: [7, 14],
+                action: "H",
+              },
+              {
+                point: [7, 15],
+                action: "H",
+              },
+              {
+                point: [7, 16],
+                action: "H",
+              },
+              {
+                point: [7, 17],
+                action: "S",
+              },
+              {
+                point: [7, 18],
+                action: "S",
+              },
+              {
+                point: [7, 19],
+                action: "S",
+              },
+              {
+                point: [7, 20],
+                action: "S",
+              },
+              {
+                point: [7, 21],
+                action: "S",
+              },
+              {
+                point: [8, 4],
+                action: "H",
+              },
+              {
+                point: [8, 5],
+                action: "H",
+              },
+              {
+                point: [8, 6],
+                action: "H",
+              },
+              {
+                point: [8, 7],
+                action: "H",
+              },
+              {
+                point: [8, 8],
+                action: "H",
+              },
+              {
+                point: [8, 9],
+                action: "H",
+              },
+              {
+                point: [8, 10],
+                action: "D",
+              },
+              {
+                point: [8, 11],
+                action: "D",
+              },
+              {
+                point: [8, 12],
+                action: "H",
+              },
+              {
+                point: [8, 13],
+                action: "H",
+              },
+              {
+                point: [8, 14],
+                action: "H",
+              },
+              {
+                point: [8, 15],
+                action: "H",
+              },
+              {
+                point: [8, 16],
+                action: "H",
+              },
+              {
+                point: [8, 17],
+                action: "S",
+              },
+              {
+                point: [8, 18],
+                action: "S",
+              },
+              {
+                point: [8, 19],
+                action: "S",
+              },
+              {
+                point: [8, 20],
+                action: "S",
+              },
+              {
+                point: [8, 21],
+                action: "S",
+              },
+              {
+                point: [9, 4],
+                action: "H",
+              },
+              {
+                point: [9, 5],
+                action: "H",
+              },
+              {
+                point: [9, 6],
+                action: "H",
+              },
+              {
+                point: [9, 7],
+                action: "H",
+              },
+              {
+                point: [9, 8],
+                action: "H",
+              },
+              {
+                point: [9, 9],
+                action: "H",
+              },
+              {
+                point: [9, 10],
+                action: "D",
+              },
+              {
+                point: [9, 11],
+                action: "D",
+              },
+              {
+                point: [9, 12],
+                action: "H",
+              },
+              {
+                point: [9, 13],
+                action: "H",
+              },
+              {
+                point: [9, 14],
+                action: "H",
+              },
+              {
+                point: [9, 15],
+                action: "H",
+              },
+              {
+                point: [9, 16],
+                action: "H",
+              },
+              {
+                point: [9, 17],
+                action: "S",
+              },
+              {
+                point: [9, 18],
+                action: "S",
+              },
+              {
+                point: [9, 19],
+                action: "S",
+              },
+              {
+                point: [9, 20],
+                action: "S",
+              },
+              {
+                point: [9, 21],
+                action: "S",
+              },
+              {
+                point: [10, 4],
+                action: "H",
+              },
+              {
+                point: [10, 5],
+                action: "H",
+              },
+              {
+                point: [10, 6],
+                action: "H",
+              },
+              {
+                point: [10, 7],
+                action: "H",
+              },
+              {
+                point: [10, 8],
+                action: "H",
+              },
+              {
+                point: [10, 9],
+                action: "H",
+              },
+              {
+                point: [10, 10],
+                action: "H",
+              },
+              {
+                point: [10, 11],
+                action: "D",
+              },
+              {
+                point: [10, 12],
+                action: "H",
+              },
+              {
+                point: [10, 13],
+                action: "H",
+              },
+              {
+                point: [10, 14],
+                action: "H",
+              },
+              {
+                point: [10, 15],
+                action: "H",
+              },
+              {
+                point: [10, 16],
+                action: "H",
+              },
+              {
+                point: [10, 17],
+                action: "S",
+              },
+              {
+                point: [10, 18],
+                action: "S",
+              },
+              {
+                point: [10, 19],
+                action: "S",
+              },
+              {
+                point: [10, 20],
+                action: "S",
+              },
+              {
+                point: [10, 21],
+                action: "S",
+              },
+              {
+                point: [11, 4],
+                action: "H",
+              },
+              {
+                point: [11, 5],
+                action: "H",
+              },
+              {
+                point: [11, 6],
+                action: "H",
+              },
+              {
+                point: [11, 7],
+                action: "H",
+              },
+              {
+                point: [11, 8],
+                action: "H",
+              },
+              {
+                point: [11, 9],
+                action: "H",
+              },
+              {
+                point: [11, 10],
+                action: "H",
+              },
+              {
+                point: [11, 11],
+                action: "H",
+              },
+              {
+                point: [11, 12],
+                action: "H",
+              },
+              {
+                point: [11, 13],
+                action: "H",
+              },
+              {
+                point: [11, 14],
+                action: "H",
+              },
+              {
+                point: [11, 15],
+                action: "H",
+              },
+              {
+                point: [11, 16],
+                action: "H",
+              },
+              {
+                point: [11, 17],
+                action: "S",
+              },
+              {
+                point: [11, 18],
+                action: "S",
+              },
+              {
+                point: [11, 19],
+                action: "S",
+              },
+              {
+                point: [11, 20],
+                action: "S",
+              },
+              {
+                point: [11, 21],
+                action: "S",
+              },
+        ]
+    }
 }
 
-const disconnect = () => {
-    console.log("Attempting to disconnect.");
-    try {
-        luckyBird.value.disconnect();
-    } catch (error) {
-        console.log("Failed to disconnect.");
-        console.log(error);
-    }
-};
+// LOCAL STORAGE
 
 const setLocalStorageContent = () => {
     let data = {
-        nextbet: nextbet.value,
+        betAmount: betAmount.value,
         currency: currency.value,
-        uuid: uuid.value,
+        uid: uid.value,
         token: token.value,
     };
     localStorage.setItem('userData', JSON.stringify(data));
@@ -803,9 +2429,9 @@ const setLocalStorageContent = () => {
 const loadLocalStorageContent = () => {
     let data = JSON.parse(localStorage.getItem("userData"));
     if (data) {
-        if (data.nextbet) nextbet.value = data.nextbet;
+        if (data.betAmount) betAmount.value = data.betAmount;
         if (data.currency) currency.value = data.currency;
-        if (data.uuid) uuid.value = data.uuid;
+        if (data.uid) uid.value = data.uid;
         if (data.token) token.value = data.token;
         console.log("Loaded settings from Local Storage.");
     }
@@ -813,5 +2439,5 @@ const loadLocalStorageContent = () => {
 
 onMounted(() => {
     loadLocalStorageContent();
-})
+});
 </script>
