@@ -112,14 +112,14 @@
                     <p>Lowest profit: {{ Number(lowestProfit).toFixed(4) }} {{ currency }}</p>
                 </div>
                 <div class="statItem">
-                    <p>Wager: {{ Number(wager).toFixed(4) }} {{ currency }} ({{ Number((wager / initialBalance) * 100).toFixed(8) }}x)</p>
+                    <p>Wager: {{ Number(wager).toFixed(4) }} {{ currency }} ({{ Number((wager / initialBalance)).toFixed(8) }}x)</p>
                 </div>
                 <div class="statItem">
-                    <p  :class="rtp >= 98 ? 'green' : 'red'">RTP: {{ Number(rtp).toFixed(4) }}%</p>
+                    <p  :class="rtp >= 99.5 ? 'green' : 'red'">RTP: {{ Number(rtp).toFixed(4) }}%</p>
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.6</p>
+        <p class="version">v0.0.6a</p>
     </div>
 </template>
 <script setup>
@@ -138,10 +138,8 @@ const uid = ref(null),
    balance = ref(null),
    initialBalance = ref(null),
    room_id = ref(null),
-   luckyBird = ref(null),
    liveSignal = ref(false),
    reconnectingSignal = ref(false),
-   message = ref(null),
    fingerprint = ref(null),
    destination = '/n',
    run = ref(false),
@@ -162,7 +160,6 @@ const uid = ref(null),
    actions = ref(null),
    hasSplit = ref(false),
    hasSplitAces = ref(false),
-   betId = ref(null),
    stopOnWin = ref(false),
    currentHand = ref(0),
    highestWinStreak = ref(0),
@@ -547,6 +544,10 @@ class LuckyBirdClient {
 
         if (dealerCards.value[0].value === 'A') {
             console.log("INSURANCE OFFERED");
+            if (playerPoints.value[0] === 21) {
+              console.log("Standing on 11 vs 21.");
+              return this.stand();
+            }
         }
 
         // Check if split
