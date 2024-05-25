@@ -51,6 +51,10 @@
                     <button @click="handleSendStand">Stand</button>
                     <button @click="handleSendDouble">Double</button>
                     <button @click="handleSendSplit">Split</button>
+                    <div class="checkbox">
+                      <label for="toogleResetSeed">Reset Seed every bet?</label>
+                      <input v-model="resetSeedBoolean" type="checkbox" id="toogleResetSeed"/>
+                    </div>
                 </div>
                 <span class="liveSignal bold" v-if='liveSignal'>Live</span>
                     <span class="reconnectingSignal bold" v-else-if='reconnectingSignal'>Reconnecting</span>
@@ -79,7 +83,7 @@
                     <p>Highest win streak: {{ highestWinStreak }}</p>
                 </div>
                 <div class="statItem">
-                    <span>Losses: </span><span :class="losePercentage <= 48 ? 'green' : 'red'">{{ losses }}</span>(<span :class="winPercentage >= 43 ? 'green' : 'red'">{{ losePercentage }}%</span><span> Average should be 48%)</span>
+                    <span>Losses: </span><span :class="losePercentage <= 48 ? 'green' : 'red'">{{ losses }}</span>(<span :class="losePercentage <= 48 ? 'green' : 'red'">{{ losePercentage }}%</span><span> Average should be 48%)</span>
                 </div>
                 <div class="statItem">
                     <p>Highest loosing streak: {{ highestLoosingStreak }}</p>
@@ -119,7 +123,7 @@
                 </div>
             </div>
         </div>
-        <p class="version">v0.0.6a</p>
+        <p class="version">v0.0.6b</p>
     </div>
 </template>
 <script setup>
@@ -176,6 +180,7 @@ const uid = ref(null),
    timeout = ref(null),
    timeoutDuration = 15000,
    timeoutCounter = ref(0),
+   resetSeedBoolean = ref(false),
    rtp = ref(0),
    url = 'luckybird.io',
    client = ref(null);
@@ -339,7 +344,20 @@ class LuckyBirdClient {
             console.log('Failed to disconnect');
             console.log(error);
         }
-    };
+    }
+
+    resetSeed() {
+      const data = {
+            code: 4037,
+            data: {
+                room_id: room_id.value,
+                client_seed: this.randomString(),
+            },
+            uid: uid.value,
+            token: token.value,
+        };
+        this.sendRequest(data);
+    }
 
     start() {
         const data = {
@@ -456,6 +474,9 @@ class LuckyBirdClient {
                     break;
                 case 3022:
                     this.handleCheckConnectedToRoom();
+                    break;
+                case 4037:
+                    console.log('New Seed generated.');
                     break;
                 case 4701:
                     console.log('------INITIAL-------');
@@ -768,6 +789,11 @@ class LuckyBirdClient {
             lowestProfit.value = profit.value;
         }
 
+        if (resetSeedBoolean.value) {
+          console.log('Attempting to reset seed.');
+          this.resetSeed();
+        }
+
         if (stopOnWin.value) {
             stopOnWin.value = false;
             run.value = false;
@@ -828,6 +854,21 @@ class LuckyBirdClient {
         }
 
         return false;
+    }
+
+    randomChar() {
+      const charSet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      const randomIndex = Math.floor(Math.random() * charSet.length);
+      return charSet[randomIndex];
+    }
+
+    randomString() {
+      const length = Math.floor(Math.random() * 7) + 6;
+      let result = '';
+      for (let i = 0; i < length; i++) {
+          result += this.randomChar();
+      }
+      return result;
     }
 
     findCard = (card) => {

@@ -125,14 +125,13 @@ h4 {
 
 .form .playerButtons {
     display: flex;
-    flex-flow: row nowrap;
+    flex-flow: row wrap;
     justify-content: space-around;
     width: 100%;
-    max-width: 400px;
 }
 
 .form .playerButtons button {
-    width: 100%;
+    width: 33%;
     margin: 5px;
 }
 
@@ -143,6 +142,18 @@ input[type="text"] {
     border-radius: 0.25em;
     font-size: 1.8rem;
     font-weight: bold;
+}
+
+.checkbox {
+  border: 1px solid transparent;
+  background-color: var(--yellow);
+  color: var(--background);
+  padding: 20px;
+  margin: 5px;
+  border-radius: 3px;
+  font-weight: bold;
+  font-size: 18px;
+  transition: background-color 0.2s ease-in-out;
 }
 
 select {
