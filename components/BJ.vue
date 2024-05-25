@@ -2463,6 +2463,7 @@ const setLocalStorageContent = () => {
         currency: currency.value,
         uid: uid.value,
         token: token.value,
+        resetSeedBoolean: resetSeedBoolean.value,
     };
     localStorage.setItem('userData', JSON.stringify(data));
     console.log("Saved settings to Local Storage.");
@@ -2475,6 +2476,7 @@ const loadLocalStorageContent = () => {
         if (data.currency) currency.value = data.currency;
         if (data.uid) uid.value = data.uid;
         if (data.token) token.value = data.token;
+        if (data.resetSeedBoolean) resetSeedBoolean.value = data.resetSeedBoolean;
         console.log("Loaded settings from Local Storage.");
     }
 }
